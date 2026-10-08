@@ -1,0 +1,51 @@
+@()
+@main("Home") {
+
+<section class="hero">
+    <div class="hero-eyebrow">
+        <span class="badge">Community Finance</span>
+    </div>
+    <h1 class="hero-title">The operating system<br>for your chama.</h1>
+    <p class="hero-sub">Onboard members, verify identities, manage contributions, loans, meetings, and reporting — without a single spreadsheet.</p>
+    <div class="hero-cta">
+        <a href="@routes.HomeController.signUp()" class="btn-primary">Get Started Free</a>
+        <a href="@routes.HomeController.signIn()" class="btn-outline">Sign In</a>
+    </div>
+    <p class="hero-stack">Play Framework · Twirl · MySQL · sbt</p>
+</section>
+
+<section class="features">
+    <div class="feature-card">
+        <div class="feature-icon">&#10003;</div>
+        <h3>Member Onboarding</h3>
+        <p>Invite members, verify identities, and assign roles — all in one flow.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">&#10003;</div>
+        <h3>Contributions &amp; Loans</h3>
+        <p>Track monthly contributions, approve loans, and auto-calculate interest.</p>
+    </div>
+    <div class="feature-card">
+        <div class="feature-icon">&#10003;</div>
+        <h3>Meetings &amp; Reports</h3>
+        <p>Schedule meetings, record minutes, and export financial reports instantly.</p>
+    </div>
+</section>
+
+<section class="auth-banner">
+    <div class="auth-card">
+        <p class="auth-label">New here?</p>
+        <h3>Create your account</h3>
+        <p class="auth-desc">Set up your chama in minutes. Free to get started.</p>
+        <a href="@routes.HomeController.signUp()" class="btn-primary">Sign Up Free</a>
+    </div>
+    <div class="auth-divider"></div>
+    <div class="auth-card">
+        <p class="auth-label">Already a member?</p>
+        <h3>Welcome back</h3>
+        <p class="auth-desc">Sign in to manage your chama, contributions, and loans.</p>
+        <a href="@routes.HomeController.signIn()" class="btn-outline">Sign In</a>
+    </div>
+</section>
+
+}

@@ -1,0 +1,15 @@
+target/
+*.class
+*.jar
+.idea/
+*.iml
+.bsp/
+logs/
+__pycache__/
+*.pyc
+venv/
+.env
+*.pkl
+*.h5
+.DS_Store
+

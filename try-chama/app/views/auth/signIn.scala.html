@@ -1,0 +1,47 @@
+@()
+@main("Sign In | ChamaApp") {
+
+<div class="auth-page">
+
+    <div class="auth-form-col">
+        <p class="eyebrow">Welcome back</p>
+        <h1 class="auth-title">Sign in to continue</h1>
+        <p class="auth-sub">Use your email and password to access the dashboard.</p>
+
+        <form class="auth-form" id="signInForm">
+            <div class="field">
+                <label class="field-label" for="email">Email</label>
+                <input class="field-input" type="email" id="email" name="email" placeholder="you@@chama.co" required>
+            </div>
+            <div class="field">
+                <div class="field-row">
+                    <label class="field-label" for="password">Password</label>
+                    <a class="field-link" href="@routes.HomeController.forgotPassword()">Forgot password?</a>
+                </div>
+                <input class="field-input" type="password" id="password" name="password" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn-submit">Sign In</button>
+        </form>
+
+        <p class="auth-footer-text">
+            Need an account?
+            <a href="@routes.HomeController.signUp()">Create one now</a>
+        </p>
+    </div>
+
+    <div class="auth-side-col">
+        <div class="auth-side-inner">
+            <div class="auth-side-badge">Trusted by chamas across Kenya</div>
+            <h2 class="auth-side-title">Manage your chama<br>like a pro.</h2>
+            <ul class="auth-side-list">
+                <li>Real-time contribution tracking</li>
+                <li>Loan approvals &amp; repayment schedules</li>
+                <li>Meeting minutes &amp; agendas</li>
+                <li>Financial reports ready to share</li>
+            </ul>
+        </div>
+    </div>
+
+</div>
+
+}

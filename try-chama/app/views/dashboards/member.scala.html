@@ -1,0 +1,591 @@
+@(user: models.User)
+@main("Member Dashboard | ChamaApp", showHeader = false) {
+
+<div class="dash-root">
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <span class="brand-dot"></span>
+            <div>
+                <div class="sidebar-app">Chama Link</div>
+                <div class="sidebar-chama">@{if(user.chamaName != null) user.chamaName else "My Chama"}</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <!-- onclick="showSection('dashboard')" is the only change from your original -->
+            <button class="nav-item active" onclick="showSection('dashboard')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Dashboard
+            </button>
+            <button class="nav-item" onclick="showSection('contributions')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                Contributions
+            </button>
+            <button class="nav-item" onclick="showSection('loans')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>
+                Loans
+            </button>
+            <button class="nav-item" onclick="showSection('meetings')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Meetings
+            </button>
+            <button class="nav-item" onclick="showSection('notifications')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                Notifications
+            </button>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <button class="nav-item" onclick="showSection('profile')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Profile
+            </button>
+            <a href="@routes.HomeController.logout()" class="nav-item nav-item--danger">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Logout
+            </a>
+        </div>
+    </aside>
+
+    <div class="dash-main">
+        <header class="dash-header">
+            <div class="dash-header-left">
+                <p class="dash-header-label" id="headerLabel">MEMBER DASHBOARD</p>
+                <p class="dash-chama-name">@{if(user.chamaName != null) user.chamaName else "My Chama"}</p>
+            </div>
+            <div class="dash-header-right">
+                <button class="icon-btn" title="Notifications" onclick="showSection('notifications')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                    <span class="notif-dot"></span>
+                </button>
+                <div class="avatar-md">@{if(user.fullname != null && user.fullname.length >= 2) user.fullname.substring(0,2).toUpperCase() else "U"}</div>
+                <span class="dash-username">@{if(user.fullname != null) user.fullname else user.email}</span>
+            </div>
+        </header>
+
+        <div class="dash-content">
+
+            <!-- ═══ SECTION: DASHBOARD ═══ -->
+            <div id="section-dashboard">
+                <h2 class="section-title">Overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <p class="stat-label">Total Savings</p>
+                        <p class="stat-value green">Ksh 745,389</p>
+                        <p class="stat-sub">All Contributions Combined</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">My Contributions</p>
+                        <p class="stat-value">Ksh 45,000</p>
+                        <p class="stat-sub">4 Payments Made</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Active Loan</p>
+                        <p class="stat-value amber">Ksh 5,000</p>
+                        <p class="stat-sub">Balance Remaining</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Next Payment Due</p>
+                        <p class="stat-value red">Mar 31</p>
+                        <p class="stat-sub">Ksh 6,000 Due</p>
+                    </div>
+                </div>
+                <div class="table-section">
+                    <div class="table-header">
+                        <h2 class="section-title" style="margin:0">Transaction History</h2>
+                        <span class="table-header-sub">Your latest activity</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Type</th><th>Description</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead>
+                            <tbody>
+                            <tr><td><span class="type-pill contribution">Contribution</span></td><td>March 2026 contribution</td><td class="td-mono green-text">+ Ksh 6,000</td><td class="td-date">30 Mar 2026</td><td><span class="status-pill green">Paid</span></td></tr>
+                            <tr><td><span class="type-pill loan">Loan</span></td><td>Loan disbursement</td><td class="td-mono amber-text">+ Ksh 5,000</td><td class="td-date">25 Mar 2026</td><td><span class="status-pill green">Received</span></td></tr>
+                            <tr><td><span class="type-pill repayment">Repayment</span></td><td>Loan repayment #1</td><td class="td-mono red-text">- Ksh 500</td><td class="td-date">01 Mar 2026</td><td><span class="status-pill green">Confirmed</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: CONTRIBUTIONS ═══ -->
+            <div id="section-contributions" style="display:none">
+                <h2 class="section-title">Contributions</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <p class="stat-label">Total Paid</p>
+                        <p class="stat-value green">Ksh 45,000</p>
+                        <p class="stat-sub">All time</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Payments Made</p>
+                        <p class="stat-value">4</p>
+                        <p class="stat-sub">On time</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Monthly Target</p>
+                        <p class="stat-value">Ksh 6,000</p>
+                        <p class="stat-sub">Due 30th each month</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Missed</p>
+                        <p class="stat-value">0</p>
+                        <p class="stat-sub">Payments missed</p>
+                    </div>
+                </div>
+                <div class="table-section">
+                    <div class="table-header"><h2 class="section-title" style="margin:0">Payment History</h2></div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Period</th><th>Amount</th><th>Paid On</th><th>Status</th></tr></thead>
+                            <tbody>
+                            <tr><td class="td-name">April 2026</td><td class="td-mono">Ksh 6,000</td><td class="td-date">—</td><td><span class="status-pill amber">Pending</span></td></tr>
+                            <tr><td class="td-name">March 2026</td><td class="td-mono">Ksh 6,000</td><td class="td-date">30 Mar 2026</td><td><span class="status-pill green">Paid</span></td></tr>
+                            <tr><td class="td-name">February 2026</td><td class="td-mono">Ksh 6,000</td><td class="td-date">28 Feb 2026</td><td><span class="status-pill green">Paid</span></td></tr>
+                            <tr><td class="td-name">January 2026</td><td class="td-mono">Ksh 6,000</td><td class="td-date">30 Jan 2026</td><td><span class="status-pill green">Paid</span></td></tr>
+                            <tr><td class="td-name">December 2025</td><td class="td-mono">Ksh 6,000</td><td class="td-date">28 Dec 2025</td><td><span class="status-pill green">Paid</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: LOANS ═══ -->
+            <div id="section-loans" style="display:none">
+                <h2 class="section-title">Loans</h2>
+                <div class="loan-active-card">
+                    <div class="loan-active-header">
+                        <div>
+                            <p class="stat-label">Active Loan</p>
+                            <p class="stat-value amber" style="font-size:2rem">Ksh 5,000</p>
+                        </div>
+                        <span class="status-pill green">On Schedule</span>
+                    </div>
+                    <div class="loan-progress-row">
+                        <span class="loan-progress-label">Repaid: Ksh 500 of Ksh 5,500</span>
+                        <span class="loan-progress-label">9%</span>
+                    </div>
+                    <div class="loan-progress-bar"><div class="loan-progress-fill" style="width:9%"></div></div>
+                    <p class="loan-due">Next payment: <strong>Ksh 500</strong> due <strong>30 Apr 2026</strong></p>
+                </div>
+                <div class="table-section" style="margin-top:1.5rem">
+                    <div class="table-header"><h2 class="section-title" style="margin:0">Loan History</h2></div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Amount</th><th>Total Repayable</th><th>Repaid</th><th>Applied</th><th>Status</th></tr></thead>
+                            <tbody>
+                            <tr><td class="td-mono">Ksh 5,000</td><td class="td-mono">Ksh 5,500</td><td class="td-mono">Ksh 500</td><td class="td-date">20 Mar 2026</td><td><span class="status-pill green">Active</span></td></tr>
+                            <tr><td class="td-mono">Ksh 10,000</td><td class="td-mono">Ksh 11,000</td><td class="td-mono">Ksh 11,000</td><td class="td-date">01 Jun 2025</td><td><span class="status-pill green">Repaid</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: MEETINGS ═══ -->
+            <div id="section-meetings" style="display:none">
+                <h2 class="section-title">Meetings</h2>
+                <div class="meeting-card">
+                    <div class="meeting-card-left">
+                        <p class="meeting-date">25 Apr</p>
+                        <p class="meeting-time">07:30 AM</p>
+                    </div>
+                    <div class="meeting-card-body">
+                        <p class="meeting-title">April Monthly Meeting</p>
+                        <p class="meeting-venue">Nairobi CBD — Room 4B</p>
+                        <p class="meeting-agenda">Contribution review, loan approvals, AOB</p>
+                    </div>
+                    <span class="status-pill green">Upcoming</span>
+                </div>
+                <div class="table-section" style="margin-top:1.5rem">
+                    <div class="table-header"><h2 class="section-title" style="margin:0">Past Meetings</h2></div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Title</th><th>Date</th><th>Venue</th><th>Status</th></tr></thead>
+                            <tbody>
+                            <tr><td class="td-name">March Monthly Meeting</td><td class="td-date">25 Mar 2026</td><td>Nairobi CBD — Room 4B</td><td><span class="status-pill amber">Completed</span></td></tr>
+                            <tr><td class="td-name">February Monthly Meeting</td><td class="td-date">25 Feb 2026</td><td>Online — Google Meet</td><td><span class="status-pill amber">Completed</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: NOTIFICATIONS ═══ -->
+            <div id="section-notifications" style="display:none">
+                <h2 class="section-title">Notifications</h2>
+                <div class="notif-full-list">
+                    <div class="notif-row notif-row--unread">
+                        <span class="notif-icon green"></span>
+                        <div class="notif-row-body"><p class="notif-text">Contribution of <strong>Ksh 6,000</strong> confirmed</p><p class="notif-time">2 days ago</p></div>
+                    </div>
+                    <div class="notif-row notif-row--unread">
+                        <span class="notif-icon blue"></span>
+                        <div class="notif-row-body"><p class="notif-text">Your loan of <strong>Ksh 5,000</strong> was approved</p><p class="notif-time">5 days ago</p></div>
+                    </div>
+                    <div class="notif-row">
+                        <span class="notif-icon amber"></span>
+                        <div class="notif-row-body"><p class="notif-text">Next contribution due <strong>Mar 31</strong> — Ksh 6,000</p><p class="notif-time">1 week ago</p></div>
+                    </div>
+                    <div class="notif-row">
+                        <span class="notif-icon green"></span>
+                        <div class="notif-row-body"><p class="notif-text">Meeting on <strong>25 Apr 2026</strong> at 07:30 AM scheduled</p><p class="notif-time">2 weeks ago</p></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: PROFILE ═══ -->
+            <div id="section-profile" style="display:none">
+                <h2 class="section-title">My Profile</h2>
+                <div class="profile-card">
+                    <div class="profile-avatar">@{if(user.fullname != null && user.fullname.length >= 2) user.fullname.substring(0,2).toUpperCase() else "U"}</div>
+                    <div class="profile-fields">
+                        <div class="profile-field"><span class="profile-field-label">Full Name</span><span class="profile-field-value">@{if(user.fullname != null) user.fullname else "—"}</span></div>
+                        <div class="profile-field"><span class="profile-field-label">Email</span><span class="profile-field-value">@user.email</span></div>
+                        <div class="profile-field"><span class="profile-field-label">Phone</span><span class="profile-field-value">@{if(user.phoneno != null) user.phoneno else "—"}</span></div>
+                        <div class="profile-field"><span class="profile-field-label">Chama</span><span class="profile-field-value">@{if(user.chamaName != null) user.chamaName else "—"}</span></div>
+                        <div class="profile-field"><span class="profile-field-label">Role</span><span class="profile-field-value"><span class="status-pill green">@user.role</span></span></div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- end dash-content -->
+    </div><!-- end dash-main -->
+</div><!-- end dash-root -->
+
+<script>
+    /* ─────────────────────────────────────────────────────────
+       showSection(name)
+       - Hides all sections
+       - Shows only the one matching `name`
+       - Updates sidebar active button + header label
+       No fetch, no server call. Pure CSS show/hide.
+       ───────────────────────────────────────────────────────── */
+    function showSection(name) {
+
+        // Hide every section div
+        document.querySelectorAll('.dash-content > div[id^="section-"]').forEach(el => {
+            el.style.display = 'none';
+        });
+
+        // Show the requested one
+        const target = document.getElementById('section-' + name);
+        if (target) target.style.display = 'block';
+
+        // Update sidebar button highlight
+        document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('onclick') === "showSection('" + name + "')") {
+                btn.classList.add('active');
+            }
+        });
+
+        // Update header label
+        const labels = {
+            dashboard:     'MEMBER DASHBOARD',
+            contributions: 'CONTRIBUTIONS',
+            loans:         'LOANS',
+            meetings:      'MEETINGS',
+            notifications: 'NOTIFICATIONS',
+            profile:       'MY PROFILE'
+        };
+        document.getElementById('headerLabel').textContent = labels[name] || 'DASHBOARD';
+    }
+</script>
+
+}@(user: models.User)
+@main("Member Dashboard | ChamaApp", showHeader = false) {
+
+<div class="dash-root">
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <span class="brand-dot"></span>
+            <div>
+                <div class="sidebar-app">Chama Link</div>
+                <div class="sidebar-chama">@{if(user.chamaName != null) user.chamaName else "My Chama"}</div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <!-- onclick="showSection('dashboard')" is the only change from your original -->
+            <button class="nav-item active" onclick="showSection('dashboard')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Dashboard
+            </button>
+            <button class="nav-item" onclick="showSection('contributions')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                Contributions
+            </button>
+            <button class="nav-item" onclick="showSection('loans')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>
+                Loans
+            </button>
+            <button class="nav-item" onclick="showSection('meetings')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Meetings
+            </button>
+            <button class="nav-item" onclick="showSection('notifications')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                Notifications
+            </button>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <button class="nav-item" onclick="showSection('profile')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Profile
+            </button>
+            <a href="@routes.HomeController.logout()" class="nav-item nav-item--danger">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Logout
+            </a>
+        </div>
+    </aside>
+
+    <div class="dash-main">
+        <header class="dash-header">
+            <div class="dash-header-left">
+                <p class="dash-header-label" id="headerLabel">MEMBER DASHBOARD</p>
+                <p class="dash-chama-name">@{if(user.chamaName != null) user.chamaName else "My Chama"}</p>
+            </div>
+            <div class="dash-header-right">
+                <button class="icon-btn" title="Notifications" onclick="showSection('notifications')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                    <span class="notif-dot"></span>
+                </button>
+                <div class="avatar-md">@{if(user.fullname != null && user.fullname.length >= 2) user.fullname.substring(0,2).toUpperCase() else "U"}</div>
+                <span class="dash-username">@{if(user.fullname != null) user.fullname else user.email}</span>
+            </div>
+        </header>
+
+        <div class="dash-content">
+
+            <!-- ═══ SECTION: DASHBOARD ═══ -->
+            <div id="section-dashboard">
+                <h2 class="section-title">Overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <p class="stat-label">Total Savings</p>
+                        <p class="stat-value green">Ksh 745,389</p>
+                        <p class="stat-sub">All Contributions Combined</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">My Contributions</p>
+                        <p class="stat-value">Ksh 45,000</p>
+                        <p class="stat-sub">4 Payments Made</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Active Loan</p>
+                        <p class="stat-value amber">Ksh 5,000</p>
+                        <p class="stat-sub">Balance Remaining</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Next Payment Due</p>
+                        <p class="stat-value red">Mar 31</p>
+                        <p class="stat-sub">Ksh 6,000 Due</p>
+                    </div>
+                </div>
+                <div class="table-section">
+                    <div class="table-header">
+                        <h2 class="section-title" style="margin:0">Transaction History</h2>
+                        <span class="table-header-sub">Your latest activity</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Type</th><th>Description</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead>
+                            <tbody>
+                            <tr><td><span class="type-pill contribution">Contribution</span></td><td>March 2026 contribution</td><td class="td-mono green-text">+ Ksh 6,000</td><td class="td-date">30 Mar 2026</td><td><span class="status-pill green">Paid</span></td></tr>
+                            <tr><td><span class="type-pill loan">Loan</span></td><td>Loan disbursement</td><td class="td-mono amber-text">+ Ksh 5,000</td><td class="td-date">25 Mar 2026</td><td><span class="status-pill green">Received</span></td></tr>
+                            <tr><td><span class="type-pill repayment">Repayment</span></td><td>Loan repayment #1</td><td class="td-mono red-text">- Ksh 500</td><td class="td-date">01 Mar 2026</td><td><span class="status-pill green">Confirmed</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: CONTRIBUTIONS ═══ -->
+            <div id="section-contributions" style="display:none">
+                <h2 class="section-title">Contributions</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <p class="stat-label">Total Paid</p>
+                        <p class="stat-value green">Ksh 45,000</p>
+                        <p class="stat-sub">All time</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Payments Made</p>
+                        <p class="stat-value">4</p>
+                        <p class="stat-sub">On time</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Monthly Target</p>
+                        <p class="stat-value">Ksh 6,000</p>
+                        <p class="stat-sub">Due 30th each month</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Missed</p>
+                        <p class="stat-value">0</p>
+                        <p class="stat-sub">Payments missed</p>
+                    </div>
+                </div>
+                <div class="table-section">
+                    <div class="table-header"><h2 class="section-title" style="margin:0">Payment History</h2></div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Period</th><th>Amount</th><th>Paid On</th><th>Status</th></tr></thead>
+                            <tbody>
+                            <tr><td class="td-name">April 2026</td><td class="td-mono">Ksh 6,000</td><td class="td-date">—</td><td><span class="status-pill amber">Pending</span></td></tr>
+                            <tr><td class="td-name">March 2026</td><td class="td-mono">Ksh 6,000</td><td class="td-date">30 Mar 2026</td><td><span class="status-pill green">Paid</span></td></tr>
+                            <tr><td class="td-name">February 2026</td><td class="td-mono">Ksh 6,000</td><td class="td-date">28 Feb 2026</td><td><span class="status-pill green">Paid</span></td></tr>
+                            <tr><td class="td-name">January 2026</td><td class="td-mono">Ksh 6,000</td><td class="td-date">30 Jan 2026</td><td><span class="status-pill green">Paid</span></td></tr>
+                            <tr><td class="td-name">December 2025</td><td class="td-mono">Ksh 6,000</td><td class="td-date">28 Dec 2025</td><td><span class="status-pill green">Paid</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: LOANS ═══ -->
+            <div id="section-loans" style="display:none">
+                <h2 class="section-title">Loans</h2>
+                <div class="loan-active-card">
+                    <div class="loan-active-header">
+                        <div>
+                            <p class="stat-label">Active Loan</p>
+                            <p class="stat-value amber" style="font-size:2rem">Ksh 5,000</p>
+                        </div>
+                        <span class="status-pill green">On Schedule</span>
+                    </div>
+                    <div class="loan-progress-row">
+                        <span class="loan-progress-label">Repaid: Ksh 500 of Ksh 5,500</span>
+                        <span class="loan-progress-label">9%</span>
+                    </div>
+                    <div class="loan-progress-bar"><div class="loan-progress-fill" style="width:9%"></div></div>
+                    <p class="loan-due">Next payment: <strong>Ksh 500</strong> due <strong>30 Apr 2026</strong></p>
+                </div>
+                <div class="table-section" style="margin-top:1.5rem">
+                    <div class="table-header"><h2 class="section-title" style="margin:0">Loan History</h2></div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Amount</th><th>Total Repayable</th><th>Repaid</th><th>Applied</th><th>Status</th></tr></thead>
+                            <tbody>
+                            <tr><td class="td-mono">Ksh 5,000</td><td class="td-mono">Ksh 5,500</td><td class="td-mono">Ksh 500</td><td class="td-date">20 Mar 2026</td><td><span class="status-pill green">Active</span></td></tr>
+                            <tr><td class="td-mono">Ksh 10,000</td><td class="td-mono">Ksh 11,000</td><td class="td-mono">Ksh 11,000</td><td class="td-date">01 Jun 2025</td><td><span class="status-pill green">Repaid</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: MEETINGS ═══ -->
+            <div id="section-meetings" style="display:none">
+                <h2 class="section-title">Meetings</h2>
+                <div class="meeting-card">
+                    <div class="meeting-card-left">
+                        <p class="meeting-date">25 Apr</p>
+                        <p class="meeting-time">07:30 AM</p>
+                    </div>
+                    <div class="meeting-card-body">
+                        <p class="meeting-title">April Monthly Meeting</p>
+                        <p class="meeting-venue">Nairobi CBD — Room 4B</p>
+                        <p class="meeting-agenda">Contribution review, loan approvals, AOB</p>
+                    </div>
+                    <span class="status-pill green">Upcoming</span>
+                </div>
+                <div class="table-section" style="margin-top:1.5rem">
+                    <div class="table-header"><h2 class="section-title" style="margin:0">Past Meetings</h2></div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Title</th><th>Date</th><th>Venue</th><th>Status</th></tr></thead>
+                            <tbody>
+                            <tr><td class="td-name">March Monthly Meeting</td><td class="td-date">25 Mar 2026</td><td>Nairobi CBD — Room 4B</td><td><span class="status-pill amber">Completed</span></td></tr>
+                            <tr><td class="td-name">February Monthly Meeting</td><td class="td-date">25 Feb 2026</td><td>Online — Google Meet</td><td><span class="status-pill amber">Completed</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: NOTIFICATIONS ═══ -->
+            <div id="section-notifications" style="display:none">
+                <h2 class="section-title">Notifications</h2>
+                <div class="notif-full-list">
+                    <div class="notif-row notif-row--unread">
+                        <span class="notif-icon green"></span>
+                        <div class="notif-row-body"><p class="notif-text">Contribution of <strong>Ksh 6,000</strong> confirmed</p><p class="notif-time">2 days ago</p></div>
+                    </div>
+                    <div class="notif-row notif-row--unread">
+                        <span class="notif-icon blue"></span>
+                        <div class="notif-row-body"><p class="notif-text">Your loan of <strong>Ksh 5,000</strong> was approved</p><p class="notif-time">5 days ago</p></div>
+                    </div>
+                    <div class="notif-row">
+                        <span class="notif-icon amber"></span>
+                        <div class="notif-row-body"><p class="notif-text">Next contribution due <strong>Mar 31</strong> — Ksh 6,000</p><p class="notif-time">1 week ago</p></div>
+                    </div>
+                    <div class="notif-row">
+                        <span class="notif-icon green"></span>
+                        <div class="notif-row-body"><p class="notif-text">Meeting on <strong>25 Apr 2026</strong> at 07:30 AM scheduled</p><p class="notif-time">2 weeks ago</p></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: PROFILE ═══ -->
+            <div id="section-profile" style="display:none">
+                <h2 class="section-title">My Profile</h2>
+                <div class="profile-card">
+                    <div class="profile-avatar">@{if(user.fullname != null && user.fullname.length >= 2) user.fullname.substring(0,2).toUpperCase() else "U"}</div>
+                    <div class="profile-fields">
+                        <div class="profile-field"><span class="profile-field-label">Full Name</span><span class="profile-field-value">@{if(user.fullname != null) user.fullname else "—"}</span></div>
+                        <div class="profile-field"><span class="profile-field-label">Email</span><span class="profile-field-value">@user.email</span></div>
+                        <div class="profile-field"><span class="profile-field-label">Phone</span><span class="profile-field-value">@{if(user.phoneno != null) user.phoneno else "—"}</span></div>
+                        <div class="profile-field"><span class="profile-field-label">Chama</span><span class="profile-field-value">@{if(user.chamaName != null) user.chamaName else "—"}</span></div>
+                        <div class="profile-field"><span class="profile-field-label">Role</span><span class="profile-field-value"><span class="status-pill green">@user.role</span></span></div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- end dash-content -->
+    </div><!-- end dash-main -->
+</div><!-- end dash-root -->
+
+<script>
+    /* ─────────────────────────────────────────────────────────
+       showSection(name)
+       - Hides all sections
+       - Shows only the one matching `name`
+       - Updates sidebar active button + header label
+       No fetch, no server call. Pure CSS show/hide.
+       ───────────────────────────────────────────────────────── */
+    function showSection(name) {
+
+        // Hide every section div
+        document.querySelectorAll('.dash-content > div[id^="section-"]').forEach(el => {
+            el.style.display = 'none';
+        });
+
+        // Show the requested one
+        const target = document.getElementById('section-' + name);
+        if (target) target.style.display = 'block';
+
+        // Update sidebar button highlight
+        document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('onclick') === "showSection('" + name + "')") {
+                btn.classList.add('active');
+            }
+        });
+
+        // Update header label
+        const labels = {
+            dashboard:     'MEMBER DASHBOARD',
+            contributions: 'CONTRIBUTIONS',
+            loans:         'LOANS',
+            meetings:      'MEETINGS',
+            notifications: 'NOTIFICATIONS',
+            profile:       'MY PROFILE'
+        };
+        document.getElementById('headerLabel').textContent = labels[name] || 'DASHBOARD';
+    }
+</script>
+
+}

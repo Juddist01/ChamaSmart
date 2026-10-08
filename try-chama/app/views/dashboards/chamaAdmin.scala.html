@@ -1,0 +1,328 @@
+@(user: models.User)
+@main("Chama Admin Dashboard | ChamaApp", showHeader = false) {
+
+<div class="dash-root">
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <span class="brand-dot"></span>
+            <div>
+                <div class="sidebar-app">Chama Link</div>
+                <div class="sidebar-chama">@{if(user.chamaName != null) user.chamaName else "My Chama"} · Admin</div>
+            </div>
+        </div>
+        <nav class="sidebar-nav">
+            <button class="nav-item active" onclick="showSection('dashboard')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Dashboard
+            </button>
+            <button class="nav-item" onclick="showSection('contributions')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                Contributions
+            </button>
+            <button class="nav-item" onclick="showSection('loans')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>
+                Loan Requests
+                <span class="nav-badge" id="loanBadge">3</span>
+            </button>
+            <button class="nav-item" onclick="showSection('meetings')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Meetings
+            </button>
+            <button class="nav-item" onclick="showSection('members')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                Members
+            </button>
+            <button class="nav-item" onclick="showSection('notifications')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                Notifications
+            </button>
+        </nav>
+        <div class="sidebar-bottom">
+            <button class="nav-item" onclick="showSection('profile')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Profile
+            </button>
+            <a href="@routes.HomeController.logout()" class="nav-item nav-item--danger">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Logout
+            </a>
+        </div>
+    </aside>
+
+    <div class="dash-main">
+        <header class="dash-header">
+            <div class="dash-header-left">
+                <p class="dash-header-label" id="headerLabel">ADMIN DASHBOARD</p>
+                <p class="dash-chama-name">@{if(user.chamaName != null) user.chamaName else "My Chama"}</p>
+            </div>
+            <div class="dash-header-right">
+                <span class="admin-badge">Admin</span>
+                <button class="icon-btn" title="Notifications" onclick="showSection('notifications')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                    <span class="notif-dot"></span>
+                </button>
+                <div class="avatar-md">@{if(user.fullname != null && user.fullname.length >= 2) user.fullname.substring(0,2).toUpperCase() else "A"}</div>
+                <span class="dash-username">@{if(user.fullname != null) user.fullname else user.email}</span>
+            </div>
+        </header>
+
+        <div class="dash-content">
+
+            <!-- ═══ SECTION: DASHBOARD ═══ -->
+            <div id="section-dashboard">
+                <h2 class="section-title">Overview</h2>
+                <div class="stats-grid stats-grid--admin">
+                    <div class="stat-card">
+                        <p class="stat-label">Total Savings</p>
+                        <p class="stat-value green">Ksh 745,389</p>
+                        <p class="stat-sub">This Cycle</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Total Members</p>
+                        <p class="stat-value">24</p>
+                        <p class="stat-sub">2 Inactive</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Pending Loans</p>
+                        <p class="stat-value amber">3</p>
+                        <p class="stat-sub">Awaiting Approval</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Defaulters</p>
+                        <p class="stat-value red">2</p>
+                        <p class="stat-sub">Overdue Payment</p>
+                    </div>
+                </div>
+                <div class="table-section">
+                    <div class="table-header">
+                        <h2 class="section-title" style="margin:0">Contributions — April 2026</h2>
+                        <span class="table-header-sub">Ksh 6,000 per member</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Member</th><th>Role</th><th>Amount</th><th>Paid On</th><th>Status</th><th>Action</th></tr></thead>
+                            <tbody>
+                            <tr><td class="td-name">Ben Doe</td><td>Member</td><td class="td-mono">Ksh 6,000</td><td class="td-date">30 Mar 2026</td><td><span class="status-pill green">Paid</span></td><td><span class="action-pill approved">Approved</span></td></tr>
+                            <tr><td class="td-name">Pape Rstac</td><td>Member</td><td class="td-mono">Ksh 6,000</td><td class="td-date">29 Mar 2026</td><td><span class="status-pill green">Paid</span></td><td><span class="action-pill approved">Approved</span></td></tr>
+                            <tr><td class="td-name">Blueb Ills</td><td>Member</td><td class="td-mono">Ksh 6,000</td><td class="td-date">28 Mar 2026</td><td><span class="status-pill green">Paid</span></td><td><span class="action-pill approved">Approved</span></td></tr>
+                            <tr><td class="td-name">Gt Bread</td><td>Member</td><td class="td-mono">—</td><td class="td-date">—</td><td><span class="status-pill red">Missed</span></td><td><span class="action-pill denied">Remind</span></td></tr>
+                            <tr><td class="td-name">Mon Cherie</td><td>Treasurer</td><td class="td-mono">—</td><td class="td-date">—</td><td><span class="status-pill amber">Pending</span></td><td><span class="action-pill pending">Awaiting</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: CONTRIBUTIONS ═══ -->
+            <div id="section-contributions" style="display:none">
+                <h2 class="section-title">Contributions</h2>
+                <div class="stats-grid stats-grid--admin">
+                    <div class="stat-card">
+                        <p class="stat-label">Total Collected</p>
+                        <p class="stat-value green">Ksh 138,000</p>
+                        <p class="stat-sub">This cycle</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Members Paid</p>
+                        <p class="stat-value">23</p>
+                        <p class="stat-sub">of 24 members</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Defaulters</p>
+                        <p class="stat-value red">1</p>
+                        <p class="stat-sub">Gt Bread</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Pending</p>
+                        <p class="stat-value amber">1</p>
+                        <p class="stat-sub">Mon Cherie</p>
+                    </div>
+                </div>
+                <div class="table-section">
+                    <div class="table-header">
+                        <h2 class="section-title" style="margin:0">All Members — April 2026</h2>
+                        <span class="table-header-sub">Ksh 6,000 target</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Member</th><th>Phone</th><th>Amount</th><th>Paid On</th><th>Status</th><th>Action</th></tr></thead>
+                            <tbody>
+                            <tr><td class="td-name">Ben Doe</td><td>0712 000 001</td><td class="td-mono">Ksh 6,000</td><td class="td-date">30 Mar</td><td><span class="status-pill green">Paid</span></td><td><span class="action-pill approved">Approved</span></td></tr>
+                            <tr><td class="td-name">Pape Rstac</td><td>0712 000 002</td><td class="td-mono">Ksh 6,000</td><td class="td-date">29 Mar</td><td><span class="status-pill green">Paid</span></td><td><span class="action-pill approved">Approved</span></td></tr>
+                            <tr><td class="td-name">Blueb Ills</td><td>0712 000 003</td><td class="td-mono">Ksh 6,000</td><td class="td-date">28 Mar</td><td><span class="status-pill green">Paid</span></td><td><span class="action-pill approved">Approved</span></td></tr>
+                            <tr><td class="td-name">Gt Bread</td><td>0712 000 004</td><td class="td-mono">—</td><td class="td-date">—</td><td><span class="status-pill red">Missed</span></td><td><span class="action-pill denied">Send Reminder</span></td></tr>
+                            <tr><td class="td-name">Mon Cherie</td><td>0712 000 005</td><td class="td-mono">—</td><td class="td-date">—</td><td><span class="status-pill amber">Pending</span></td><td><span class="action-pill pending">Awaiting</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: LOAN REQUESTS ═══ -->
+            <div id="section-loans" style="display:none">
+                <h2 class="section-title">Loan Requests</h2>
+                <div class="stats-grid stats-grid--admin">
+                    <div class="stat-card">
+                        <p class="stat-label">Pending</p>
+                        <p class="stat-value amber">3</p>
+                        <p class="stat-sub">Awaiting review</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Active Loans</p>
+                        <p class="stat-value">12</p>
+                        <p class="stat-sub">Currently disbursed</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Total Lent</p>
+                        <p class="stat-value">Ksh 1.9M</p>
+                        <p class="stat-sub">All time</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Overdue</p>
+                        <p class="stat-value red">1</p>
+                        <p class="stat-sub">Needs follow-up</p>
+                    </div>
+                </div>
+                <div class="table-section">
+                    <div class="table-header">
+                        <h2 class="section-title" style="margin:0">Pending Requests</h2>
+                        <span class="table-header-sub">Require your approval</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Member</th><th>Amount</th><th>Reason</th><th>Applied</th><th>Status</th><th>Action</th></tr></thead>
+                            <tbody>
+                            <tr><td class="td-name">Mon Cherie</td><td class="td-mono">Ksh 10,000</td><td>School fees</td><td class="td-date">05 Apr 2026</td><td><span class="status-pill amber">Pending</span></td><td class="td-actions"><button class="btn-view">Approve</button><button class="btn-suspend">Reject</button></td></tr>
+                            <tr><td class="td-name">Pape Rstac</td><td class="td-mono">Ksh 15,000</td><td>Business</td><td class="td-date">03 Apr 2026</td><td><span class="status-pill amber">Pending</span></td><td class="td-actions"><button class="btn-view">Approve</button><button class="btn-suspend">Reject</button></td></tr>
+                            <tr><td class="td-name">Blueb Ills</td><td class="td-mono">Ksh 5,000</td><td>Medical</td><td class="td-date">01 Apr 2026</td><td><span class="status-pill amber">Pending</span></td><td class="td-actions"><button class="btn-view">Approve</button><button class="btn-suspend">Reject</button></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: MEETINGS ═══ -->
+            <div id="section-meetings" style="display:none">
+                <h2 class="section-title">Meetings</h2>
+                <div style="display:flex; justify-content:flex-end; margin-bottom:1rem">
+                    <button class="btn-add-chama">+ Schedule Meeting</button>
+                </div>
+                <div class="meeting-card">
+                    <div class="meeting-card-left">
+                        <p class="meeting-date">25 Apr</p>
+                        <p class="meeting-time">07:30 AM</p>
+                    </div>
+                    <div class="meeting-card-body">
+                        <p class="meeting-title">April Monthly Meeting</p>
+                        <p class="meeting-venue">Nairobi CBD — Room 4B</p>
+                        <p class="meeting-agenda">Contribution review, loan approvals, election of treasurer, AOB</p>
+                    </div>
+                    <span class="status-pill green">Upcoming</span>
+                </div>
+                <div class="table-section" style="margin-top:1.5rem">
+                    <div class="table-header"><h2 class="section-title" style="margin:0">Past Meetings</h2></div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Title</th><th>Date</th><th>Attendance</th><th>Minutes</th><th>Status</th></tr></thead>
+                            <tbody>
+                            <tr><td class="td-name">March Monthly Meeting</td><td class="td-date">25 Mar 2026</td><td>21/24</td><td><span class="action-pill approved">Uploaded</span></td><td><span class="status-pill amber">Completed</span></td></tr>
+                            <tr><td class="td-name">February Monthly Meeting</td><td class="td-date">25 Feb 2026</td><td>19/24</td><td><span class="action-pill pending">Pending</span></td><td><span class="status-pill amber">Completed</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: MEMBERS ═══ -->
+            <div id="section-members" style="display:none">
+                <h2 class="section-title">Members</h2>
+                <div class="stats-grid stats-grid--admin">
+                    <div class="stat-card"><p class="stat-label">Total</p><p class="stat-value">24</p><p class="stat-sub">Registered members</p></div>
+                    <div class="stat-card"><p class="stat-label">Active</p><p class="stat-value green">22</p><p class="stat-sub">Contributing</p></div>
+                    <div class="stat-card"><p class="stat-label">Inactive</p><p class="stat-value amber">2</p><p class="stat-sub">Not contributing</p></div>
+                    <div class="stat-card"><p class="stat-label">Defaulters</p><p class="stat-value red">1</p><p class="stat-sub">Missed payments</p></div>
+                </div>
+                <div class="table-section">
+                    <div class="table-header">
+                        <h2 class="section-title" style="margin:0">Member Directory</h2>
+                        <button class="btn-add-chama">+ Add Member</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Name</th><th>Phone</th><th>Role</th><th>Joined</th><th>Status</th><th>Action</th></tr></thead>
+                            <tbody>
+                            <tr><td class="td-name">Ben Doe</td><td>0712 000 001</td><td>Member</td><td class="td-date">Jan 2025</td><td><span class="status-pill green">Active</span></td><td><button class="btn-view">View</button></td></tr>
+                            <tr><td class="td-name">Pape Rstac</td><td>0712 000 002</td><td>Member</td><td class="td-date">Jan 2025</td><td><span class="status-pill green">Active</span></td><td><button class="btn-view">View</button></td></tr>
+                            <tr><td class="td-name">Mon Cherie</td><td>0712 000 005</td><td>Treasurer</td><td class="td-date">Jan 2025</td><td><span class="status-pill green">Active</span></td><td><button class="btn-view">View</button></td></tr>
+                            <tr><td class="td-name">Gt Bread</td><td>0712 000 004</td><td>Member</td><td class="td-date">Mar 2025</td><td><span class="status-pill red">Defaulter</span></td><td><button class="btn-view">View</button></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: NOTIFICATIONS ═══ -->
+            <div id="section-notifications" style="display:none">
+                <h2 class="section-title">Notifications</h2>
+                <div class="notif-full-list">
+                    <div class="notif-row notif-row--unread"><span class="notif-icon amber"></span><div class="notif-row-body"><p class="notif-text"><strong>Gt Bread</strong> missed March contribution</p><p class="notif-time">1 day ago</p></div></div>
+                    <div class="notif-row notif-row--unread"><span class="notif-icon blue"></span><div class="notif-row-body"><p class="notif-text"><strong>Mon Cherie</strong> applied for a loan of Ksh 10,000</p><p class="notif-time">3 days ago</p></div></div>
+                    <div class="notif-row"><span class="notif-icon green"></span><div class="notif-row-body"><p class="notif-text">Meeting on <strong>25 Apr 2026</strong> confirmed</p><p class="notif-time">1 week ago</p></div></div>
+                    <div class="notif-row"><span class="notif-icon green"></span><div class="notif-row-body"><p class="notif-text"><strong>Pape Rstac</strong> completed loan repayment</p><p class="notif-time">2 weeks ago</p></div></div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: PROFILE ═══ -->
+            <div id="section-profile" style="display:none">
+                <h2 class="section-title">My Profile</h2>
+                <div class="profile-card">
+                    <div class="profile-avatar">@{if(user.fullname != null && user.fullname.length >= 2) user.fullname.substring(0,2).toUpperCase() else "A"}</div>
+                    <div class="profile-fields">
+                        <div class="profile-field"><span class="profile-field-label">Full Name</span><span class="profile-field-value">@{if(user.fullname != null) user.fullname else "—"}</span></div>
+                        <div class="profile-field"><span class="profile-field-label">Email</span><span class="profile-field-value">@user.email</span></div>
+                        <div class="profile-field"><span class="profile-field-label">Phone</span><span class="profile-field-value">@{if(user.phoneno != null) user.phoneno else "—"}</span></div>
+                        <div class="profile-field"><span class="profile-field-label">Chama</span><span class="profile-field-value">@{if(user.chamaName != null) user.chamaName else "—"}</span></div>
+                        <div class="profile-field"><span class="profile-field-label">Role</span><span class="profile-field-value"><span class="status-pill green">Chama Admin</span></span></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function showSection(name) {
+        document.querySelectorAll('.dash-content > div[id^="section-"]').forEach(el => {
+            el.style.display = 'none';
+        });
+        const target = document.getElementById('section-' + name);
+        if (target) target.style.display = 'block';
+
+        document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('onclick') === "showSection('" + name + "')") {
+                btn.classList.add('active');
+            }
+        });
+
+        const labels = {
+            dashboard:     'ADMIN DASHBOARD',
+            contributions: 'CONTRIBUTIONS',
+            loans:         'LOAN REQUESTS',
+            meetings:      'MEETINGS',
+            members:       'MEMBERS',
+            notifications: 'NOTIFICATIONS',
+            profile:       'MY PROFILE'
+        };
+        document.getElementById('headerLabel').textContent = labels[name] || 'ADMIN DASHBOARD';
+
+        // Hide loan badge once they've viewed loans
+        if (name === 'loans') {
+            const badge = document.getElementById('loanBadge');
+            if (badge) badge.style.display = 'none';
+        }
+    }
+</script>
+
+}

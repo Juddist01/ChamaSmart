@@ -1,0 +1,39 @@
+@(title: String, showHeader: Boolean = true)(content: Html)
+
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>@title - ChamaApp</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@@300;400;500;600;700&family=DM+Mono:wght@@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" media="screen" href='@routes.Assets.versioned("stylesheets/main.css")'>
+    <link rel="shortcut icon" type="image/png" href='@routes.Assets.versioned("images/favicon.png")'>
+</head>
+<body>
+@if(showHeader) {
+<div class="page-shell">
+    <header class="site-header">
+        <a class="logo" href="@routes.HomeController.index()">
+            <span class="logo-dot"></span>ChamaApp
+        </a>
+        <nav class="site-nav">
+            <a href="@routes.HomeController.signIn()" class="btn-ghost">Sign In</a>
+            <a href="@routes.HomeController.signUp()" class="btn-primary-sm">Get Started</a>
+        </nav>
+    </header>
+    <main class="splash">
+        @content
+    </main>
+    <footer class="site-footer">
+        <p>© @java.time.Year.now().getValue() ChamaApp · Built with Play Framework + Twirl</p>
+    </footer>
+</div>
+} else {
+@content
+}
+<script src='@routes.Assets.versioned("javascripts/main.js")' type="text/javascript"></script>
+</body>
+</html>

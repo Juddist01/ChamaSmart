@@ -1,0 +1,143 @@
+:root {
+  --green: #1B8A5A;
+  --light-green: #E9F7EF;
+  --dark: #222;
+  --gray: #555;
+  --radius: 12px;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  background: #fff;
+  color: var(--dark);
+}
+
+/* Navbar */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem 3rem;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo h1 {
+  font-size: 1.4rem;
+  color: var(--green);
+  font-weight: 700;
+}
+
+nav a {
+  margin-left: 20px;
+  text-decoration: none;
+  color: var(--dark);
+  font-weight: 500;
+  transition: 0.3s;
+}
+
+nav a:hover {
+  color: var(--green);
+}
+
+.btn-primary {
+  background: var(--green);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: var(--radius);
+  font-weight: 600;
+}
+
+.btn-outline {
+  border: 1px solid var(--green);
+  color: var(--green);
+  padding: 9px 18px;
+  border-radius: var(--radius);
+}
+
+/* Hero */
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3rem 4rem;
+  background: var(--light-green);
+  flex-wrap: wrap;
+}
+
+.hero-text {
+  max-width: 500px;
+}
+
+.hero h1 {
+  font-size: 2.3rem;
+  color: var(--green);
+  margin-bottom: 1rem;
+}
+
+.hero p {
+  color: var(--gray);
+  margin-bottom: 1.5rem;
+}
+
+/* Features */
+.features {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.features h2 {
+  margin-bottom: 2rem;
+  color: var(--green);
+}
+
+.feature-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.feature {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--radius);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  width: 260px;
+}
+
+.feature .icon {
+  font-size: 2rem;
+}
+
+/* About */
+.about {
+  background: var(--light-green);
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.about-content h2 {
+  color: var(--green);
+}
+
+.about-content p {
+  color: var(--gray);
+  max-width: 600px;
+  margin: 1rem auto 2rem;
+}
+
+/* Footer */
+footer {
+  background: #f1f1f1;
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.9rem;
+}

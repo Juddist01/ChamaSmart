@@ -1,0 +1,78 @@
+@()
+@main("Sign Up | ChamaApp") {
+
+<div class="auth-page auth-page--wide">
+
+    <div class="auth-form-col">
+        <p class="eyebrow">Chama Onboarding</p>
+        <h1 class="auth-title">Create your account</h1>
+        <p class="auth-sub">Fill in the required fields to unlock the right experience.</p>
+
+        <form class="auth-form" id="registerForm">
+            <div class="field">
+                <label class="field-label" for="fullName">FullName</label>
+                <input class="field-input" type="fullName" id="fullName" name="fullName" placeholder="Enter your first and last name" required>
+            </div>
+            <div class="field">
+                <label class="field-label" for="email">Email</label>
+                <input class="field-input" type="email" id="email" name="email" placeholder="you@@gmail.com" required>
+            </div>
+            <div class="field">
+                <label class="field-label" for="phone">Phone number</label>
+                <input class="field-input" type="tel" id="phone" name="phone" placeholder="+254 712 345 678" required>
+            </div>
+            <div class="field-row-2">
+                <div class="field">
+                    <label class="field-label" for="password">Password</label>
+                    <input class="field-input" type="password" id="password" name="password" placeholder="Create password" required>
+                </div>
+                <div class="field">
+                    <label class="field-label" for="confirm_password">Confirm password</label>
+                    <input class="field-input" type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter password" required>
+                </div>
+                <div class="field">
+                    <label class="field-label" for="chama_name">Chama Name</label>
+                    <input class="field-input" type="chama_name" id="chama_name" name="chama_name" placeholder="Chama Name" required>
+                </div>
+            </div>
+            <div class="field">
+                <label class="field-label" for="role">Your role</label>
+                <select class="field-input field-select" id="role" name="role" required>
+                    <option value="">Select a role...</option>
+                    <option value="chama_admin">Chama Group Admin</option>
+                    <option value="member">Member</option>
+                </select>
+            </div>
+            <label class="field-checkbox">
+                <input type="checkbox" name="accept_terms" required>
+                <span>I accept the <a href="#">ChamaApp terms</a> and privacy policy</span>
+            </label>
+            <button type="submit" class="btn-submit">Create Account</button>
+        </form>
+
+        <p class="auth-footer-text">
+            Already have an account?
+            <a href="@routes.HomeController.signIn()">Sign in</a>
+        </p>
+    </div>
+
+    <div class="auth-side-col">
+        <div class="auth-side-inner">
+            <div class="auth-side-badge">Free to get started</div>
+            <h2 class="auth-side-title">Why ChamaApp?</h2>
+            <ul class="auth-side-list">
+                <li>Frictionless onboarding for every role</li>
+                <li>KYC-ready user profiles</li>
+                <li>Dashboards that keep members accountable</li>
+                <li>Exportable reports for lenders &amp; partners</li>
+            </ul>
+            <div class="auth-side-stat">
+                <span class="auth-side-stat-num">100%</span>
+                <span class="auth-side-stat-label">No spreadsheets required</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+}

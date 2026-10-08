@@ -1,0 +1,28 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# Core pages
+GET     /                           controllers.HomeController.index()
+GET     /sign-in                    controllers.HomeController.signIn(request: Request)
+GET     /sign-up                    controllers.HomeController.signUp(request: Request)
+GET     /forgot-password            controllers.HomeController.forgotPassword(request: Request)
+
+
+GET     /logout                     controllers.HomeController.logout(request: Request)
+
+
+POST    /api/signup                 controllers.HomeController.signUpSubmit(request: Request)
+POST    /api/signin                 controllers.HomeController.signInSubmit(request: Request)
+
+
+
+
+# Dashboards
+GET     /platform-admin             controllers.HomeController.platformAdminDashboard(request: Request)
+GET     /chama-admin                controllers.HomeController.chamaAdminDashboard(request: Request)
+GET     /member                     controllers.HomeController.memberDashboard(request: Request)
+
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

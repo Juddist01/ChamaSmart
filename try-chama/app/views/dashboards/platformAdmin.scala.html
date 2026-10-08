@@ -1,0 +1,251 @@
+@(user: models.User)
+@main("Platform Admin Dashboard | ChamaApp", showHeader = false) {
+
+<div class="dash-root platform-root">
+    <aside class="sidebar platform-sidebar">
+        <div class="sidebar-brand">
+            <span class="brand-dot plat-dot"></span>
+            <div><div class="sidebar-app">ChamaLink</div></div>
+            <span class="super-badge">Super Admin</span>
+        </div>
+        <nav class="sidebar-nav">
+            <button class="nav-item active plat-active" onclick="showSection('dashboard')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Platform Dashboard
+            </button>
+            <button class="nav-item" onclick="showSection('chamas')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+                All Chamas
+            </button>
+            <button class="nav-item" onclick="showSection('users')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                Users
+            </button>
+            <button class="nav-item" onclick="showSection('revenue')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                Revenue
+            </button>
+            <button class="nav-item" onclick="showSection('analytics')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                Analytics
+            </button>
+            <button class="nav-item" onclick="showSection('announcements')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 17H2a3 3 0 004-3V9a7 7 0 0114 0v5a3 3 0 004 3z"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                Announcements
+            </button>
+        </nav>
+        <div class="sidebar-bottom">
+            <button class="nav-item" onclick="showSection('settings')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                System Settings
+            </button>
+            <a href="@routes.HomeController.logout()" class="nav-item nav-item--danger">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Logout
+            </a>
+        </div>
+    </aside>
+
+    <div class="dash-main">
+        <header class="dash-header">
+            <div class="dash-header-left">
+                <p class="dash-header-label" id="headerLabel">PLATFORM ADMIN DASHBOARD</p>
+            </div>
+            <div class="dash-header-right">
+                <span class="super-badge-header">Super Admin</span>
+                <button class="icon-btn" title="Notifications" onclick="showSection('announcements')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                </button>
+                <div class="avatar-md plat-avatar">@{if(user.fullname != null && user.fullname.length >= 2) user.fullname.substring(0,2).toUpperCase() else "PA"}</div>
+                <span class="dash-username">@{if(user.fullname != null) user.fullname else user.email} (Owner)</span>
+            </div>
+        </header>
+
+        <div class="dash-content">
+
+            <!-- ═══ SECTION: DASHBOARD ═══ -->
+            <div id="section-dashboard">
+                <h2 class="section-title">Platform Metrics</h2>
+                <div class="stats-grid stats-grid--admin" style="margin-bottom:2rem">
+                    <div class="stat-card plat-card"><p class="stat-label">Total Chamas</p><p class="stat-value" style="color:#a78bfa">142</p><p class="stat-sub">+8 this month</p></div>
+                    <div class="stat-card plat-card"><p class="stat-label">Total Users</p><p class="stat-value">3,840</p><p class="stat-sub">Across all chamas</p></div>
+                    <div class="stat-card plat-card"><p class="stat-label">Money Managed</p><p class="stat-value green">KSh 18.4M</p><p class="stat-sub">Active funds</p></div>
+                    <div class="stat-card plat-card"><p class="stat-label">Active Subscriptions</p><p class="stat-value amber">118</p><p class="stat-sub">83% of chamas</p></div>
+                </div>
+                <h2 class="section-title">Analytics</h2>
+                <div class="analytics-row" style="margin-bottom:2rem">
+                    <div class="analytics-card"><p class="analytics-label">Monthly revenue</p><p class="analytics-value">KSh 59,000</p><p class="analytics-delta positive">↑ 12% vs last month</p></div>
+                    <div class="analytics-card"><p class="analytics-label">Active chamas</p><p class="analytics-value">128 / 142</p><p class="analytics-delta positive">↑ 4 new this week</p></div>
+                    <div class="analytics-card"><p class="analytics-label">Inactive chamas</p><p class="analytics-value">14</p><p class="analytics-delta negative">↓ 2 went inactive</p></div>
+                </div>
+                <div class="table-section">
+                    <div class="table-header">
+                        <h2 class="section-title" style="margin:0">Chamas Overview</h2>
+                        <button class="btn-add-chama">+ Add Chama</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Chama Name</th><th>Members</th><th>Total Savings</th><th>Plan</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody>
+                            <tr><td class="td-name">Umoja Chama</td><td>24</td><td class="td-mono">KSh 240,000</td><td><span class="plan-pill">Pro</span></td><td><span class="status-pill green">Active</span></td><td class="td-actions"><button class="btn-view">View</button><button class="btn-suspend">Suspend</button></td></tr>
+                            <tr><td class="td-name">Pamoja Savings</td><td>18</td><td class="td-mono">KSh 180,000</td><td><span class="plan-pill">Pro</span></td><td><span class="status-pill green">Active</span></td><td class="td-actions"><button class="btn-view">View</button><button class="btn-suspend">Suspend</button></td></tr>
+                            <tr><td class="td-name">Jenga Group</td><td>9</td><td class="td-mono">KSh 54,000</td><td><span class="plan-pill free">Free</span></td><td><span class="status-pill amber">Inactive</span></td><td class="td-actions"><button class="btn-view">View</button><button class="btn-suspend">Suspend</button></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: ALL CHAMAS ═══ -->
+            <div id="section-chamas" style="display:none">
+                <h2 class="section-title">All Chamas</h2>
+                <div class="stats-grid stats-grid--admin" style="margin-bottom:1.5rem">
+                    <div class="stat-card plat-card"><p class="stat-label">Total</p><p class="stat-value" style="color:#a78bfa">142</p><p class="stat-sub">Registered</p></div>
+                    <div class="stat-card plat-card"><p class="stat-label">Active</p><p class="stat-value green">128</p><p class="stat-sub">Contributing</p></div>
+                    <div class="stat-card plat-card"><p class="stat-label">Inactive</p><p class="stat-value amber">14</p><p class="stat-sub">No activity</p></div>
+                    <div class="stat-card plat-card"><p class="stat-label">Suspended</p><p class="stat-value red">0</p><p class="stat-sub">By platform</p></div>
+                </div>
+                <div class="table-section">
+                    <div class="table-header">
+                        <h2 class="section-title" style="margin:0">Chama Directory</h2>
+                        <button class="btn-add-chama">+ Add Chama</button>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Chama Name</th><th>Admin</th><th>Members</th><th>Savings</th><th>Plan</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody>
+                            <tr><td class="td-name">Umoja Chama</td><td>John Doe</td><td>24</td><td class="td-mono">KSh 240,000</td><td><span class="plan-pill">Pro</span></td><td><span class="status-pill green">Active</span></td><td class="td-actions"><button class="btn-view">View</button><button class="btn-suspend">Suspend</button></td></tr>
+                            <tr><td class="td-name">Pamoja Savings</td><td>Jane Wanjiru</td><td>18</td><td class="td-mono">KSh 180,000</td><td><span class="plan-pill">Pro</span></td><td><span class="status-pill green">Active</span></td><td class="td-actions"><button class="btn-view">View</button><button class="btn-suspend">Suspend</button></td></tr>
+                            <tr><td class="td-name">Jenga Group</td><td>Mike Otieno</td><td>9</td><td class="td-mono">KSh 54,000</td><td><span class="plan-pill free">Free</span></td><td><span class="status-pill amber">Inactive</span></td><td class="td-actions"><button class="btn-view">View</button><button class="btn-suspend">Suspend</button></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: USERS ═══ -->
+            <div id="section-users" style="display:none">
+                <h2 class="section-title">Users</h2>
+                <div class="stats-grid stats-grid--admin" style="margin-bottom:1.5rem">
+                    <div class="stat-card plat-card"><p class="stat-label">Total Users</p><p class="stat-value">3,840</p><p class="stat-sub">All roles</p></div>
+                    <div class="stat-card plat-card"><p class="stat-label">Members</p><p class="stat-value green">3,692</p><p class="stat-sub">Active</p></div>
+                    <div class="stat-card plat-card"><p class="stat-label">Admins</p><p class="stat-value" style="color:#a78bfa">142</p><p class="stat-sub">Chama admins</p></div>
+                    <div class="stat-card plat-card"><p class="stat-label">Pending KYC</p><p class="stat-value amber">412</p><p class="stat-sub">Unverified</p></div>
+                </div>
+                <div class="table-section">
+                    <div class="table-header"><h2 class="section-title" style="margin:0">User Directory</h2></div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Chama</th><th>Status</th><th>Action</th></tr></thead>
+                            <tbody>
+                            <tr><td class="td-name">John Doe</td><td>john@@chama.co</td><td>Chama Admin</td><td>Umoja Chama</td><td><span class="status-pill green">Active</span></td><td class="td-actions"><button class="btn-view">View</button><button class="btn-suspend">Suspend</button></td></tr>
+                            <tr><td class="td-name">Peter Kamau</td><td>peter@@chama.co</td><td>Member</td><td>Umoja Chama</td><td><span class="status-pill green">Active</span></td><td class="td-actions"><button class="btn-view">View</button><button class="btn-suspend">Suspend</button></td></tr>
+                            <tr><td class="td-name">Jane Wanjiru</td><td>jane@@chama.co</td><td>Chama Admin</td><td>Pamoja Savings</td><td><span class="status-pill green">Active</span></td><td class="td-actions"><button class="btn-view">View</button><button class="btn-suspend">Suspend</button></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: REVENUE ═══ -->
+            <div id="section-revenue" style="display:none">
+                <h2 class="section-title">Revenue</h2>
+                <div class="stats-grid stats-grid--admin" style="margin-bottom:1.5rem">
+                    <div class="stat-card plat-card"><p class="stat-label">This Month</p><p class="stat-value green">KSh 59,000</p><p class="stat-sub">↑ 12% vs last month</p></div>
+                    <div class="stat-card plat-card"><p class="stat-label">This Year</p><p class="stat-value green">KSh 620,000</p><p class="stat-sub">Jan – Apr 2026</p></div>
+                    <div class="stat-card plat-card"><p class="stat-label">Pro Subscribers</p><p class="stat-value" style="color:#a78bfa">118</p><p class="stat-sub">KSh 500/month each</p></div>
+                    <div class="stat-card plat-card"><p class="stat-label">Free Tier</p><p class="stat-value amber">24</p><p class="stat-sub">Conversion targets</p></div>
+                </div>
+                <div class="table-section">
+                    <div class="table-header"><h2 class="section-title" style="margin:0">Monthly Breakdown</h2></div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Month</th><th>Subscriptions</th><th>Revenue</th><th>New Chamas</th><th>Churned</th></tr></thead>
+                            <tbody>
+                            <tr><td class="td-name">April 2026</td><td>118</td><td class="td-mono green-text">KSh 59,000</td><td>4</td><td>1</td></tr>
+                            <tr><td class="td-name">March 2026</td><td>115</td><td class="td-mono green-text">KSh 57,500</td><td>6</td><td>2</td></tr>
+                            <tr><td class="td-name">February 2026</td><td>111</td><td class="td-mono green-text">KSh 55,500</td><td>3</td><td>0</td></tr>
+                            <tr><td class="td-name">January 2026</td><td>108</td><td class="td-mono green-text">KSh 54,000</td><td>8</td><td>1</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: ANALYTICS ═══ -->
+            <div id="section-analytics" style="display:none">
+                <h2 class="section-title">Analytics</h2>
+                <div class="analytics-row" style="margin-bottom:1.5rem">
+                    <div class="analytics-card"><p class="analytics-label">Active chamas</p><p class="analytics-value">128 / 142</p><p class="analytics-delta positive">↑ 4 new this week</p></div>
+                    <div class="analytics-card"><p class="analytics-label">Inactive chamas</p><p class="analytics-value">14</p><p class="analytics-delta negative">↓ 2 went inactive</p></div>
+                    <div class="analytics-card"><p class="analytics-label">Avg members / chama</p><p class="analytics-value">27</p><p class="analytics-delta positive">↑ up from 24</p></div>
+                </div>
+                <div class="analytics-row">
+                    <div class="analytics-card"><p class="analytics-label">Total loans issued</p><p class="analytics-value">KSh 8.2M</p><p class="analytics-delta positive">↑ 18% YTD</p></div>
+                    <div class="analytics-card"><p class="analytics-label">Loan repayment rate</p><p class="analytics-value">94%</p><p class="analytics-delta positive">↑ healthy</p></div>
+                    <div class="analytics-card"><p class="analytics-label">Avg contribution</p><p class="analytics-value">KSh 5,800</p><p class="analytics-delta positive">↑ per member/month</p></div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: ANNOUNCEMENTS ═══ -->
+            <div id="section-announcements" style="display:none">
+                <h2 class="section-title">Announcements</h2>
+                <div style="display:flex; justify-content:flex-end; margin-bottom:1rem">
+                    <button class="btn-add-chama">+ New Announcement</button>
+                </div>
+                <div class="notif-full-list">
+                    <div class="notif-row notif-row--unread"><span class="notif-icon" style="background:#a78bfa"></span><div class="notif-row-body"><p class="notif-text"><strong>System Maintenance</strong> — Scheduled downtime on 20 Apr 2026 from 02:00–04:00 AM</p><p class="notif-time">2 days ago · Sent to all chamas</p></div></div>
+                    <div class="notif-row"><span class="notif-icon green"></span><div class="notif-row-body"><p class="notif-text"><strong>New Feature</strong> — Loan repayment reminders are now automated</p><p class="notif-time">1 week ago · Sent to all chamas</p></div></div>
+                    <div class="notif-row"><span class="notif-icon amber"></span><div class="notif-row-body"><p class="notif-text"><strong>Policy Update</strong> — New KYC requirements effective May 2026</p><p class="notif-time">2 weeks ago · Sent to all admins</p></div></div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: SETTINGS ═══ -->
+            <div id="section-settings" style="display:none">
+                <h2 class="section-title">System Settings</h2>
+                <div class="profile-card" style="max-width:100%; flex-direction:column; gap:1.5rem">
+                    <div class="profile-fields">
+                        <div class="profile-field"><span class="profile-field-label">Platform Name</span><span class="profile-field-value">ChamaApp</span></div>
+                        <div class="profile-field"><span class="profile-field-label">Owner</span><span class="profile-field-value">@{if(user.fullname != null) user.fullname else user.email}</span></div>
+                        <div class="profile-field"><span class="profile-field-label">Email</span><span class="profile-field-value">@user.email</span></div>
+                        <div class="profile-field"><span class="profile-field-label">Pro Plan Price</span><span class="profile-field-value">KSh 500 / month</span></div>
+                        <div class="profile-field"><span class="profile-field-label">Default Loan Rate</span><span class="profile-field-value">10% per cycle</span></div>
+                        <div class="profile-field"><span class="profile-field-label">Environment</span><span class="profile-field-value"><span class="status-pill amber">Development</span></span></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function showSection(name) {
+        document.querySelectorAll('.dash-content > div[id^="section-"]').forEach(el => {
+            el.style.display = 'none';
+        });
+        const target = document.getElementById('section-' + name);
+        if (target) target.style.display = 'block';
+
+        // Update active state — handles both plat-active and regular active
+        document.querySelectorAll('.sidebar-nav .nav-item').forEach(btn => {
+            btn.classList.remove('active', 'plat-active');
+            if (btn.getAttribute('onclick') === "showSection('" + name + "')") {
+                btn.classList.add('active', 'plat-active');
+            }
+        });
+
+        const labels = {
+            dashboard:     'PLATFORM ADMIN DASHBOARD',
+            chamas:        'ALL CHAMAS',
+            users:         'USERS',
+            revenue:       'REVENUE',
+            analytics:     'ANALYTICS',
+            announcements: 'ANNOUNCEMENTS',
+            settings:      'SYSTEM SETTINGS'
+        };
+        document.getElementById('headerLabel').textContent = labels[name] || 'PLATFORM DASHBOARD';
+    }
+</script>
+
+}
