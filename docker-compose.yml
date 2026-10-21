@@ -1,0 +1,56 @@
+# ChamaSmart - runs the whole system with one command:  docker compose up --build
+services:
+  db:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3307:3306"          # 3307 on your laptop so it does not clash with a local MySQL
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  credit-scoring:
+    build: ./ml-services/credit-scoring
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+
+  forecasting:
+    build: ./ml-services/forecasting
+    restart: unless-stopped
+    ports:
+      - "5002:5002"
+
+  app:
+    build: ./try-chama
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      credit-scoring:
+        condition: service_started
+      forecasting:
+        condition: service_started
+    environment:
+      DB_URL: jdbc:mysql://db:3306/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      APPLICATION_SECRET: ${APPLICATION_SECRET}
+      AT_USERNAME: ${AT_USERNAME}
+      AT_API_KEY: ${AT_API_KEY}
+      CREDIT_SCORING_URL: http://credit-scoring:5001
+      FORECASTING_URL: http://forecasting:5002
+    ports:
+      - "9000:9000"
+
+volumes:
+  db_data:
