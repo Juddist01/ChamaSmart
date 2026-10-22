@@ -53,7 +53,7 @@ SEED = 42
 
 
 def mount_drive_if_colab():
-    if str(ROOT).startswith("/content/drive"):
+    if str(ROOT).startswith("/content/drive") and not Path("/content/drive/MyDrive").exists():
         try:
             from google.colab import drive
             drive.mount("/content/drive")

@@ -60,7 +60,7 @@ RISK_BANDS = {"low_max": 0.35, "high_min": 0.65}
 
 
 def mount_drive_if_colab():
-    if str(ROOT).startswith("/content/drive"):
+    if str(ROOT).startswith("/content/drive") and not Path("/content/drive/MyDrive").exists():
         try:
             from google.colab import drive
             drive.mount("/content/drive")
