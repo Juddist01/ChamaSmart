@@ -14,7 +14,8 @@ Colab usage:
     !git clone https://github.com/Juddist01/ChamaSmart /content/ChamaSmart
     !python /content/ChamaSmart/ml-services/forecasting/training/train_forecasting.py
 
-Edit the CONFIG block to match your CSV first.
+Column names can be set with environment variables (the Colab notebook does this for you):
+    CHAMA_MEMBER, CHAMA_TIME, CHAMA_VALUE, CHAMA_DATA, CHAMA_ROOT, CHAMA_REPO, CHAMA_RUN_TAG, CHAMA_MAX_MEMBERS
 Note: this uses a statsmodels AIC grid search rather than the pmdarima "auto_arima" package. If
 Chapter 3 says Auto-ARIMA, describe what you actually ran here.
 """
@@ -40,9 +41,9 @@ from statsmodels.tsa.arima.model import ARIMA
 ROOT = Path(os.environ.get("CHAMA_ROOT", "/content/drive/MyDrive/ChamaSmart"))
 DATA_PATH = Path(os.environ.get("CHAMA_DATA", ROOT / "datasets" / "chama_forecasting_dataset.csv"))
 REPO_DIR = os.environ.get("CHAMA_REPO", "/content/ChamaSmart")
-MEMBER_COL = "member_id"     # column that identifies the member
-TIME_COL = "week"            # column that orders the rows in time
-VALUE_COL = "days_to_pay"    # the number being forecast (your notes quote MAE in days)
+MEMBER_COL = os.environ.get("CHAMA_MEMBER", "member_id")   # column that identifies the member
+TIME_COL = os.environ.get("CHAMA_TIME", "week")            # column that orders the rows in time
+VALUE_COL = os.environ.get("CHAMA_VALUE", "days_to_pay")   # the number being forecast
 HOLDOUT_WEEKS = 12
 MIN_TRAIN_POINTS = 24
 ORDER_GRID = [(p, d, q) for p in range(3) for d in range(2) for q in range(3)]
@@ -87,7 +88,7 @@ def fit_best_arima(train):
 def main():
     warnings.filterwarnings("ignore")
     mount_drive_if_colab()
-    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_id = datetime.now().strftime("%Y%m%d_%H%M%S") + os.environ.get("CHAMA_RUN_TAG", "")
     run_dir = ROOT / "runs" / "forecasting" / run_id
     art_dir = run_dir / "service_artifacts"
     art_dir.mkdir(parents=True, exist_ok=True)
@@ -181,6 +182,7 @@ def main():
     (art_dir / "metadata.json").write_text(json.dumps(metadata, indent=2))
     (run_dir / "metrics.json").write_text(json.dumps(summary, indent=2))
 
+    print(f"RUN_DIR={run_dir}")
     print("\nDONE.")
     print(f"Copy the two files in {art_dir} into ml-services/forecasting/model/ in your repo.")
 

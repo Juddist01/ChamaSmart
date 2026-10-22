@@ -4,9 +4,10 @@ ChamaSmart - credit scoring training (Google Colab or local).
 What it does, in plain words:
   1. Loads the CSV and checks it.
   2. Splits it into TRAIN / VALIDATION / TEST (test is touched only once, at the end).
-  3. Trains a BASELINE (logistic regression) and the MAIN model (XGBoost + GridSearchCV).
-  4. Picks a decision threshold on the VALIDATION set.
-  5. Evaluates both models once on the TEST set.
+  3. Trains a BASELINE (logistic regression), a RANDOM FOREST, and the MAIN model (XGBoost),
+     each tuned with GridSearchCV on the training data only.
+  4. Picks a decision threshold per model on the VALIDATION set.
+  5. Evaluates all three models once on the TEST set.
   6. Saves everything (model, metrics, plots, versions, seed, git commit) to a run folder.
 
 Colab usage:
@@ -15,7 +16,8 @@ Colab usage:
     !git clone https://github.com/Juddist01/ChamaSmart /content/ChamaSmart
     !python /content/ChamaSmart/ml-services/credit-scoring/training/train_credit_scoring.py
 
-Edit the CONFIG block below to match your CSV before running.
+Column names can be set with environment variables (the Colab notebook does this for you):
+    CHAMA_LABEL, CHAMA_POSITIVE_MEANS, CHAMA_DATA, CHAMA_ROOT, CHAMA_REPO, CHAMA_RUN_TAG
 """
 import json
 import os
@@ -34,6 +36,7 @@ import pandas as pd
 import sklearn
 import xgboost
 from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (ConfusionMatrixDisplay, accuracy_score, confusion_matrix,
                              f1_score, precision_score, recall_score, roc_auc_score, roc_curve)
@@ -46,8 +49,8 @@ from xgboost import XGBClassifier
 ROOT = Path(os.environ.get("CHAMA_ROOT", "/content/drive/MyDrive/ChamaSmart"))
 DATA_PATH = Path(os.environ.get("CHAMA_DATA", ROOT / "datasets" / "chama_credit_scoring_dataset.csv"))
 REPO_DIR = os.environ.get("CHAMA_REPO", "/content/ChamaSmart")   # only used to record the git commit
-LABEL_COL = "label"            # name of the target column in your CSV
-POSITIVE_MEANS = "default"     # "default": label 1 = borrower defaulted (risky). "repayment": label 1 = repaid.
+LABEL_COL = os.environ.get("CHAMA_LABEL", "label")   # name of the target column in your CSV
+POSITIVE_MEANS = os.environ.get("CHAMA_POSITIVE_MEANS", "default")  # "default": 1 = defaulted (risky); "repayment": 1 = repaid
 SEED = 42
 TEST_SIZE = 0.15
 VAL_SIZE = 0.15
@@ -104,7 +107,7 @@ def evaluate(y_true, scores, threshold):
 
 def main():
     mount_drive_if_colab()
-    run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+    run_id = datetime.now().strftime("%Y%m%d_%H%M%S") + os.environ.get("CHAMA_RUN_TAG", "")
     run_dir = ROOT / "runs" / "credit_scoring" / run_id
     art_dir = run_dir / "service_artifacts"
     art_dir.mkdir(parents=True, exist_ok=True)
@@ -161,8 +164,26 @@ def main():
     print("Best XGBoost params:", search.best_params_)
     pd.DataFrame(search.cv_results_).to_csv(run_dir / "cv_results.csv", index=False)
 
+    # ---------- 3c. second comparison model: random forest ----------
+    rf_pipe = Pipeline([
+        ("pre", make_preprocessor(num_cols, cat_cols)),
+        ("clf", RandomForestClassifier(random_state=SEED, n_jobs=1)),
+    ])
+    rf_grid = {
+        "clf__n_estimators": [200, 400],
+        "clf__max_depth": [None, 8],
+        "clf__min_samples_leaf": [1, 3],
+    }
+    rf_search = GridSearchCV(
+        rf_pipe, rf_grid, scoring="roc_auc", refit=True, n_jobs=-1,
+        cv=StratifiedKFold(5, shuffle=True, random_state=SEED))
+    rf_search.fit(X_train, y_train)
+    rf_model = rf_search.best_estimator_
+    print("Best random forest params:", rf_search.best_params_)
+
     # ---------- 4. validation: compare and choose thresholds ----------
     val_scores = {"baseline_logreg": baseline.predict_proba(X_val)[:, 1],
+                  "random_forest": rf_model.predict_proba(X_val)[:, 1],
                   "xgboost": model.predict_proba(X_val)[:, 1]}
     thresholds = {k: best_threshold(y_val, v) for k, v in val_scores.items()}
     validation = {k: evaluate(y_val, v, thresholds[k]) for k, v in val_scores.items()}
@@ -170,6 +191,7 @@ def main():
 
     # ---------- 5. FINAL test evaluation (done once; do not tune after seeing this) ----------
     test_scores = {"baseline_logreg": baseline.predict_proba(X_test)[:, 1],
+                   "random_forest": rf_model.predict_proba(X_test)[:, 1],
                    "xgboost": model.predict_proba(X_test)[:, 1]}
     test = {k: evaluate(y_test, v, thresholds[k]) for k, v in test_scores.items()}
     print("TEST:", json.dumps(test, indent=2))
@@ -231,6 +253,7 @@ def main():
         "risk_bands": RISK_BANDS,
         "decision_threshold": thresholds["xgboost"],
         "best_params": search.best_params_,
+        "random_forest_best_params": rf_search.best_params_,
         "library_versions": versions,
         "validation": validation,
         "test": test,
@@ -239,9 +262,11 @@ def main():
     joblib.dump(model, art_dir / "model.joblib")
     (art_dir / "metadata.json").write_text(json.dumps(metadata, indent=2))
     joblib.dump(baseline, run_dir / "baseline_logreg.joblib")
+    joblib.dump(rf_model, run_dir / "random_forest.joblib")
     (run_dir / "metrics.json").write_text(json.dumps(
         {"validation": validation, "test": test, "versions": versions}, indent=2))
 
+    print(f"RUN_DIR={run_dir}")
     print("\nDONE.")
     print(f"Copy the two files in {art_dir} into ml-services/credit-scoring/model/ in your repo.")
     print("Then pin the library versions above in ml-services/credit-scoring/requirements.txt.")
