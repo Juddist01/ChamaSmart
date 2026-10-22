@@ -1,8 +1,7 @@
 # ---- Stage 1: build the Play app ----
-# Match the Java version to the one you develop with (check: java -version)
-# and the sbt version to project/build.properties.
+# Java 17 and sbt 1.11.7 match your machine and project/build.properties.
 FROM eclipse-temurin:17-jdk AS build
-ARG SBT_VERSION=1.10.7
+ARG SBT_VERSION=1.11.7
 RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 RUN curl -fsSL "https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz" | tar -xz -C /opt

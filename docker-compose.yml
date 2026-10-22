@@ -44,6 +44,8 @@ services:
       DB_URL: jdbc:mysql://db:3306/${DB_NAME}?useSSL=false&allowPublicKeyRetrieval=true
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
+      EVOLUTIONS_ENABLED: "true"
+      EVOLUTIONS_AUTO_APPLY: "true"
       APPLICATION_SECRET: ${APPLICATION_SECRET}
       AT_USERNAME: ${AT_USERNAME}
       AT_API_KEY: ${AT_API_KEY}
