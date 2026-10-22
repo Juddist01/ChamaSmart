@@ -17,7 +17,7 @@ Colab usage:
     !python /content/ChamaSmart/ml-services/credit-scoring/training/train_credit_scoring.py
 
 Column names can be set with environment variables (the Colab notebook does this for you):
-    CHAMA_LABEL, CHAMA_POSITIVE_MEANS, CHAMA_DATA, CHAMA_ROOT, CHAMA_REPO, CHAMA_RUN_TAG
+    CHAMA_LABEL, CHAMA_POSITIVE_MEANS, CHAMA_DATA, CHAMA_ROOT, CHAMA_REPO, CHAMA_RUN_TAG, CHAMA_DROP
 """
 import json
 import os
@@ -124,8 +124,20 @@ def main():
     print(f"Duplicate rows: {int(df.duplicated().sum())}")
     print(f"Label balance (share of 1s): {df[LABEL_COL].mean():.3f}")
     df = df.dropna().reset_index(drop=True)
+    counts = df[LABEL_COL].value_counts().to_dict()
+    if len(counts) < 2 or min(counts.values()) < 30:
+        raise SystemExit(
+            f"STOP: the label column '{LABEL_COL}' has too few examples of one class ({counts}). "
+            "A model cannot learn from this. Regenerate the dataset (datasets/generate_credit_dataset.py) "
+            "or check LABEL_COL.")
 
-    X = df.drop(columns=[LABEL_COL])
+    # Identifier columns (member_id, id, *_id) are not evidence about risk, so they are never model inputs.
+    extra_drop = [c.strip() for c in os.environ.get("CHAMA_DROP", "").split(",") if c.strip()]
+    id_cols = [c for c in df.columns if c != LABEL_COL and (c.lower() == "id" or c.lower().endswith("_id"))]
+    drop_cols = sorted(set(extra_drop + id_cols) & set(df.columns))
+    print("Ignoring identifier columns:", drop_cols or "none")
+
+    X = df.drop(columns=[LABEL_COL] + drop_cols)
     y = df[LABEL_COL].astype(int)
     num_cols = [c for c in X.columns if pd.api.types.is_numeric_dtype(X[c])]
     cat_cols = [c for c in X.columns if c not in num_cols]
