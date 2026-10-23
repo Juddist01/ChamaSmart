@@ -1,0 +1,116 @@
+{
+  "model_version": "forecast-arima-20261023_084759_arima_service",
+  "run_id": "20261023_084759_arima_service",
+  "git_commit": "aadb205",
+  "seed": 42,
+  "dataset": "chama_forecasting_dataset.csv",
+  "value_column": "days_late",
+  "holdout_weeks": 12,
+  "order_grid": [
+    [
+      0,
+      0,
+      0
+    ],
+    [
+      0,
+      0,
+      1
+    ],
+    [
+      0,
+      0,
+      2
+    ],
+    [
+      0,
+      1,
+      0
+    ],
+    [
+      0,
+      1,
+      1
+    ],
+    [
+      0,
+      1,
+      2
+    ],
+    [
+      1,
+      0,
+      0
+    ],
+    [
+      1,
+      0,
+      1
+    ],
+    [
+      1,
+      0,
+      2
+    ],
+    [
+      1,
+      1,
+      0
+    ],
+    [
+      1,
+      1,
+      1
+    ],
+    [
+      1,
+      1,
+      2
+    ],
+    [
+      2,
+      0,
+      0
+    ],
+    [
+      2,
+      0,
+      1
+    ],
+    [
+      2,
+      0,
+      2
+    ],
+    [
+      2,
+      1,
+      0
+    ],
+    [
+      2,
+      1,
+      1
+    ],
+    [
+      2,
+      1,
+      2
+    ]
+  ],
+  "library_versions": {
+    "python": "3.13.16",
+    "statsmodels": "0.15.0",
+    "numpy": "2.1.3",
+    "pandas": "2.2.3"
+  },
+  "results": {
+    "members_modelled": 8,
+    "holdout_weeks": 12,
+    "mean_mae_naive_last_value": 2.3333,
+    "mean_mae_moving_average_4": 1.6562,
+    "mean_mae_arima": 1.5925,
+    "share_members_arima_beats_best_baseline": 0.375
+  },
+  "note": "Forecasts are estimates; compare against the baselines reported in results."
+}

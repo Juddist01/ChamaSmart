@@ -1,10 +1,4 @@
-# After training, pin these to the versions printed in model/metadata.json ("library_versions"),
-# e.g. scikit-learn==1.6.1 - a model saved with one version can fail to load in another.
-flask
-gunicorn
-pandas
-numpy
-scikit-learn
-xgboost
-joblib
-pytest
+scikit-learn==1.6.1
+xgboost==3.4.1
+pandas==2.2.3
+numpy==2.1.3

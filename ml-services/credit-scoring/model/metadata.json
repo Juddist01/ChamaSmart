@@ -1,0 +1,190 @@
+{
+  "model_version": "credit-xgb-20261023_084439",
+  "run_id": "20261023_084439",
+  "git_commit": "aadb205",
+  "seed": 42,
+  "dataset": "chama_credit_scoring_dataset.csv",
+  "n_rows": 1500,
+  "label_column": "default",
+  "positive_class_meaning": "default",
+  "features": [
+    {
+      "name": "consistency_rate",
+      "type": "numeric",
+      "min": 0.3,
+      "max": 1.0
+    },
+    {
+      "name": "avg_days_late",
+      "type": "numeric",
+      "min": 0.0,
+      "max": 12.9
+    },
+    {
+      "name": "prior_loans",
+      "type": "numeric",
+      "min": 0.0,
+      "max": 11.0
+    },
+    {
+      "name": "repayment_rate",
+      "type": "numeric",
+      "min": 0.327,
+      "max": 1.0
+    },
+    {
+      "name": "tenure_weeks",
+      "type": "numeric",
+      "min": 8.0,
+      "max": 259.0
+    },
+    {
+      "name": "total_contributions",
+      "type": "numeric",
+      "min": 1229.0,
+      "max": 342533.0
+    }
+  ],
+  "risk_bands": {
+    "low_max": 0.35,
+    "high_min": 0.65
+  },
+  "decision_threshold": 0.09,
+  "best_params": {
+    "clf__learning_rate": 0.05,
+    "clf__max_depth": 3,
+    "clf__n_estimators": 100,
+    "clf__subsample": 0.8
+  },
+  "random_forest_best_params": {
+    "clf__max_depth": 8,
+    "clf__min_samples_leaf": 1,
+    "clf__n_estimators": 200
+  },
+  "library_versions": {
+    "python": "3.13.16",
+    "scikit-learn": "1.6.1",
+    "xgboost": "3.4.1",
+    "pandas": "2.2.3",
+    "numpy": "2.1.3"
+  },
+  "validation": {
+    "baseline_logreg": {
+      "auc_roc": 0.725,
+      "f1": 0.4483,
+      "precision": 0.3714,
+      "recall": 0.5652,
+      "accuracy": 0.7168,
+      "threshold": 0.25,
+      "confusion_matrix [[TN, FP], [FN, TP]]": [
+        [
+          136,
+          44
+        ],
+        [
+          20,
+          26
+        ]
+      ],
+      "n": 226
+    },
+    "random_forest": {
+      "auc_roc": 0.6576,
+      "f1": 0.4206,
+      "precision": 0.2679,
+      "recall": 0.9783,
+      "accuracy": 0.4513,
+      "threshold": 0.08,
+      "confusion_matrix [[TN, FP], [FN, TP]]": [
+        [
+          57,
+          123
+        ],
+        [
+          1,
+          45
+        ]
+      ],
+      "n": 226
+    },
+    "xgboost": {
+      "auc_roc": 0.6837,
+      "f1": 0.4211,
+      "precision": 0.2699,
+      "recall": 0.9565,
+      "accuracy": 0.4646,
+      "threshold": 0.09,
+      "confusion_matrix [[TN, FP], [FN, TP]]": [
+        [
+          61,
+          119
+        ],
+        [
+          2,
+          44
+        ]
+      ],
+      "n": 226
+    }
+  },
+  "test": {
+    "baseline_logreg": {
+      "auc_roc": 0.6578,
+      "f1": 0.3784,
+      "precision": 0.3231,
+      "recall": 0.4565,
+      "accuracy": 0.6933,
+      "threshold": 0.25,
+      "confusion_matrix [[TN, FP], [FN, TP]]": [
+        [
+          135,
+          44
+        ],
+        [
+          25,
+          21
+        ]
+      ],
+      "n": 225
+    },
+    "random_forest": {
+      "auc_roc": 0.6455,
+      "f1": 0.3697,
+      "precision": 0.2364,
+      "recall": 0.8478,
+      "accuracy": 0.4089,
+      "threshold": 0.08,
+      "confusion_matrix [[TN, FP], [FN, TP]]": [
+        [
+          53,
+          126
+        ],
+        [
+          7,
+          39
+        ]
+      ],
+      "n": 225
+    },
+    "xgboost": {
+      "auc_roc": 0.6298,
+      "f1": 0.3707,
+      "precision": 0.239,
+      "recall": 0.8261,
+      "accuracy": 0.4267,
+      "threshold": 0.09,
+      "confusion_matrix [[TN, FP], [FN, TP]]": [
+        [
+          58,
+          121
+        ],
+        [
+          8,
+          38
+        ]
+      ],
+      "n": 225
+    }
+  },
+  "note": "risk_score is a model score, NOT a calibrated probability."
+}

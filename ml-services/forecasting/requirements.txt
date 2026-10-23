@@ -1,8 +1,4 @@
 # After training, pin to the versions in model/metadata.json ("library_versions").
-flask
-gunicorn
-numpy
-pandas
-statsmodels
-joblib
-pytest
+statsmodels==0.15.0
+pandas==2.2.3
+numpy==2.1.3
