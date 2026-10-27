@@ -9,7 +9,9 @@ import java.util.Date;
 
 public class JwtUtil {
 
-    private static final String SECRET = "YourSuperSecretKeyThatIsAtLeast32CharactersLong!!";
+    private static final String SECRET = System.getenv("JWT_SECRET") != null
+            ? System.getenv("JWT_SECRET")
+            : "58b1e7287be02926d2129f268cdd46a07b54fcd31ff0fd52458f9b25219342fb";
     private static final long EXPIRATION = 1000 * 60 * 60; // 1 hour
 
     public static String generateToken(String email) {
