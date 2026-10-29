@@ -58,14 +58,21 @@ public class HomeController extends Controller {
 
         User user = userOpt.get();
 
+        // Accounts created with Google/GitHub have no usable password: they must sign in that way.
+        if (user.password == null || user.password.startsWith(AuthController.SOCIAL_PASSWORD_PREFIX)) {
+            return unauthorized(Json.newObject().put("error",
+                    "This account signs in with Google or GitHub. Use the buttons below the form."));
+        }
+
         // TODO: replace plain-text compare with BCrypt in production
         if (!password.equals(user.password)) {
             return unauthorized(Json.newObject().put("error", "Invalid email or password"));
         }
 
         // Decide redirect URL based on role
+        String role = user.role == null ? "member" : user.role;
         String redirectUrl;
-        switch (user.role) {
+        switch (role) {
             case "platform_admin": redirectUrl = "/platform-admin"; break;
             case "chama_admin":    redirectUrl = "/chama-admin";    break;
             default:               redirectUrl = "/member";
@@ -77,7 +84,7 @@ public class HomeController extends Controller {
                 .put("redirect", redirectUrl))
                 // Store userId in session cookie for dashboard auth checks
                 .addingToSession(request, "userId",   String.valueOf(user.id))
-                .addingToSession(request, "userRole", user.role);
+                .addingToSession(request, "userRole", role);
     }
 
     public Result signUpSubmit(Http.Request request) {
@@ -98,6 +105,10 @@ public class HomeController extends Controller {
         if (email == null || phoneno == null || password == null ||
                 confirmPassword == null || role == null || !acceptTerms) {
             return badRequest(Json.newObject().put("error", "Please fill all fields and accept the terms."));
+        }
+        // Security: people may only choose these roles for themselves (never "platform_admin").
+        if (!AuthController.SELF_SERVICE_ROLES.contains(role)) {
+            return badRequest(Json.newObject().put("error", "Please choose a valid role."));
         }
         if (!password.equals(confirmPassword)) {
             return badRequest(Json.newObject().put("error", "Passwords do not match."));

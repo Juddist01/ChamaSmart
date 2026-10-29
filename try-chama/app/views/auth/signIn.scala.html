@@ -6,7 +6,7 @@
     <div class="auth-form-col">
         <p class="eyebrow">Welcome back</p>
         <h1 class="auth-title">Sign in to continue</h1>
-        <p class="auth-sub">Use your email and password to access the dashboard.</p>
+        <p class="auth-sub">Use your email and password, or continue with Google or GitHub.</p>
 
         <form class="auth-form" id="signInForm">
             <div class="field">
@@ -22,6 +22,13 @@
             </div>
             <button type="submit" class="btn-submit">Sign In</button>
         </form>
+
+        <div class="social-divider"><span>or continue with</span></div>
+        <div class="social-buttons">
+            <button type="button" class="social-btn" data-provider="google">Continue with Google</button>
+            <button type="button" class="social-btn" data-provider="github">Continue with GitHub</button>
+        </div>
+        <p id="socialMessage" class="social-message" role="alert"></p>
 
         <p class="auth-footer-text">
             Need an account?
@@ -43,5 +50,8 @@
     </div>
 
 </div>
+
+<link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/social.css")'>
+<script type="module" src='@routes.Assets.versioned("javascripts/firebase-auth.js")'></script>
 
 }

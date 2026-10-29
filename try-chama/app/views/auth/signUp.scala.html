@@ -11,7 +11,7 @@
         <form class="auth-form" id="registerForm">
             <div class="field">
                 <label class="field-label" for="fullName">FullName</label>
-                <input class="field-input" type="fullName" id="fullName" name="fullName" placeholder="Enter your first and last name" required>
+                <input class="field-input" type="text" id="fullName" name="fullName" placeholder="Enter your first and last name" required>
             </div>
             <div class="field">
                 <label class="field-label" for="email">Email</label>
@@ -32,7 +32,7 @@
                 </div>
                 <div class="field">
                     <label class="field-label" for="chama_name">Chama Name</label>
-                    <input class="field-input" type="chama_name" id="chama_name" name="chama_name" placeholder="Chama Name" required>
+                    <input class="field-input" type="text" id="chama_name" name="chama_name" placeholder="Chama Name" required>
                 </div>
             </div>
             <div class="field">
@@ -49,6 +49,14 @@
             </label>
             <button type="submit" class="btn-submit">Create Account</button>
         </form>
+
+        <div class="social-divider"><span>or sign up with</span></div>
+        <div class="social-buttons">
+            <button type="button" class="social-btn" data-provider="google">Continue with Google</button>
+            <button type="button" class="social-btn" data-provider="github">Continue with GitHub</button>
+        </div>
+        <p class="auth-sub">Google and GitHub sign-up only needs your role, chama name and the terms ticked above.</p>
+        <p id="socialMessage" class="social-message" role="alert"></p>
 
         <p class="auth-footer-text">
             Already have an account?
@@ -74,5 +82,8 @@
     </div>
 
 </div>
+
+<link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/social.css")'>
+<script type="module" src='@routes.Assets.versioned("javascripts/firebase-auth.js")'></script>
 
 }

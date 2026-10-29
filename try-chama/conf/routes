@@ -15,7 +15,8 @@ GET     /logout                     controllers.HomeController.logout(request: R
 POST    /api/signup                 controllers.HomeController.signUpSubmit(request: Request)
 POST    /api/signin                 controllers.HomeController.signInSubmit(request: Request)
 
-
+# Sign in / sign up with Google or GitHub (Firebase)
+POST    /api/auth/firebase          controllers.AuthController.firebaseLogin(request: Request)
 
 
 # Dashboards

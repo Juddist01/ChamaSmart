@@ -1,0 +1,55 @@
+/* Google / GitHub sign-in buttons. Uses the page's own text colour so it works on light or dark themes. */
+.social-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.25rem 0 0.9rem;
+  font-size: 0.8rem;
+  opacity: 0.75;
+}
+.social-divider::before,
+.social-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.3;
+}
+.social-buttons {
+  display: grid;
+  gap: 0.6rem;
+}
+.social-btn {
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(128, 128, 128, 0.5);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+}
+.social-btn:hover:not(:disabled) {
+  background: rgba(128, 128, 128, 0.14);
+}
+.social-btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+.social-btn:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+.social-message {
+  min-height: 1.25rem;
+  margin: 0.75rem 0 0;
+  font-size: 0.9rem;
+}
+.social-message.is-error {
+  color: #d64545;
+  font-weight: 600;
+}
+.social-message.is-error::before {
+  content: "\26A0  ";   /* warning sign, so errors are not shown by colour alone */
+}
