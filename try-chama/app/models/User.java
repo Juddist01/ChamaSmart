@@ -16,7 +16,10 @@ public class User extends Model {
     public String password;   // matches DB column: password
 
     @Column(name = "chama_name")
-    public String chamaName;  // matches DB column: chama_name
+    public String chamaName;
+
+    @Column(name = "chama_id")
+    public Long chamaId;  // matches DB column: chama_name
 
     public String role;       // matches DB column: role
 

@@ -1,0 +1,19 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.2.0, pluggy-1.7.0 -- /home/jude/Desktop/ChamaApp/.venv-credit/bin/python
+cachedir: .pytest_cache
+rootdir: /home/jude/Desktop/ChamaApp/ml-services/forecasting
+collecting ... collected 11 items
+
+tests/test_api.py::test_health_ok PASSED                                 [  9%]
+tests/test_api.py::test_known_member_gets_arima_forecast PASSED          [ 18%]
+tests/test_api.py::test_unknown_member_gets_labelled_baseline PASSED     [ 27%]
+tests/test_api.py::test_history_too_short_rejected PASSED                [ 36%]
+tests/test_api.py::test_non_numeric_history_rejected PASSED              [ 45%]
+tests/test_api.py::test_bad_weeks_rejected[0] PASSED                     [ 54%]
+tests/test_api.py::test_bad_weeks_rejected[13] PASSED                    [ 63%]
+tests/test_api.py::test_bad_weeks_rejected[-1] PASSED                    [ 72%]
+tests/test_api.py::test_bad_weeks_rejected[4] PASSED                     [ 81%]
+tests/test_api.py::test_bad_weeks_rejected[2.5] PASSED                   [ 90%]
+tests/test_api.py::test_missing_member_rejected PASSED                   [100%]
+
+============================== 11 passed in 5.98s ==============================

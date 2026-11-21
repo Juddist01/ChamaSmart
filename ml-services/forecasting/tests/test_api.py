@@ -27,12 +27,23 @@ def test_health_ok(client):
     assert client.get("/health").status_code == 200
 
 
-def test_known_member_gets_arima_forecast(client):
+def test_known_member_gets_arima_forecast(client, monkeypatch):
+    monkeypatch.setattr(forecasting, "ALLOW_MEMBER_ARIMA", True)
     r = client.post("/api/forecast", json={"member_id": known_member(), "history": HISTORY, "weeks": 4})
     body = r.get_json()
     assert r.status_code == 200
     assert body["status"] == "forecast" and body["method"] == "arima"
     assert len(body["forecast"]) == 4
+
+
+def test_known_member_gets_baseline_when_arima_disabled(client, monkeypatch):
+    monkeypatch.setattr(forecasting, "ALLOW_MEMBER_ARIMA", False)
+    r = client.post("/api/forecast", json={"member_id": known_member(), "history": HISTORY, "weeks": 4})
+    body = r.get_json()
+    assert r.status_code == 200
+    assert body["status"] == "baseline"
+    assert body["method"] == "moving_average_4"
+    assert "disabled" in body["note"].lower()
 
 
 def test_unknown_member_gets_labelled_baseline(client):

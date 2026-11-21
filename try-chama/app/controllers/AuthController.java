@@ -112,6 +112,45 @@ public class AuthController extends Controller {
 
         try {
             userRepository.save(user);
+            // Step 4: Handle Chama Creation & Membership Linking
+            if ("chama_admin".equalsIgnoreCase(role)) {
+                models.Chama chama = new models.Chama();
+                chama.name = chamaName;
+                chama.admin = user;
+                chama.save();
+
+                // Keep the admin account linked to its newly created Chama.
+                user.chamaId = chama.id;
+                io.ebean.DB.sqlUpdate(
+                        "UPDATE user SET chama_id = :chamaId WHERE id = :userId")
+                    .setParameter("chamaId", chama.id)
+                    .setParameter("userId", user.id)
+                    .execute();
+
+                if (chama.members == null) {
+                    chama.members = new java.util.ArrayList<>();
+                }
+                chama.members.add(user);
+                chama.save();
+            } else {
+                // Regular member joining an existing Chama by name
+                models.Chama existingChama = models.Chama.find.query().where().eq("name", chamaName).findOne();
+                if (existingChama != null) {
+                    if (existingChama.members == null) {
+                        existingChama.members = new java.util.ArrayList<>();
+                    }
+                    existingChama.members.add(user);
+                    existingChama.save();
+
+                    // Keep the member account linked to the Chama in the user table.
+                    user.chamaId = existingChama.id;
+                    io.ebean.DB.sqlUpdate(
+                            "UPDATE user SET chama_id = :chamaId WHERE id = :userId")
+                        .setParameter("chamaId", existingChama.id)
+                        .setParameter("userId", user.id)
+                        .execute();
+                }
+            }
         } catch (RuntimeException e) {
             // Two sign-ins at the same moment can both try to create the account. Use the one that won.
             Optional<User> winner = userRepository.findByEmail(email);

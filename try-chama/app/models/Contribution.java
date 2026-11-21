@@ -2,13 +2,10 @@ package models;
 
 import io.ebean.*;
 import jakarta.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/**
- * A Contribution is a payment a member makes to their chama.
- * e.g. "Peter paid Ksh 6,000 for March"
- */
 @Entity
 @Table(name = "contributions")
 public class Contribution extends Model {
@@ -16,45 +13,57 @@ public class Contribution extends Model {
     @Id
     public Long id;
 
-    /** Which member made this contribution */
     @ManyToOne
     @JoinColumn(name = "user_id")
     public User user;
 
-    /** Which chama it was paid into */
     @ManyToOne
     @JoinColumn(name = "chama_id")
     public Chama chama;
 
+    @Column(name = "user_name")
+    public String userName;
+
+    @Column(name = "chama_name")
+    public String chamaName;
+
+    @Column(name = "amount_paid")
     public Double amount;
 
-    /** e.g. "March 2026" — the cycle this covers */
+    @Column(name = "expected_amount")
+    public Double expectedAmount;
+
+    @Column(name = "period_name")
     public String period;
 
-    /**
-     * Payment status:
-     *   "pending"  — recorded but not confirmed
-     *   "paid"     — confirmed by admin
-     *   "missed"   — deadline passed with no payment
-     */
     public String status;
 
-    @Column(name = "paid_at")
+    @Column(name = "due_date")
+    public LocalDate dueDate;
+
+    @Column(name = "payment_date")
     public LocalDateTime paidAt;
 
-    public static final Finder<Long, Contribution> find = new Finder<>(Contribution.class);
+    @Column(name = "payment_method")
+    public String paymentMethod;
 
-    /** All contributions for a chama */
+    public static final Finder<Long, Contribution> find =
+            new Finder<>(Contribution.class);
+
     public static List<Contribution> findByChama(Long chamaId) {
-        return find.query().where().eq("chama.id", chamaId).findList();
+        return find.query()
+                .where()
+                .eq("chama.id", chamaId)
+                .findList();
     }
 
-    /** All contributions by a specific member */
     public static List<Contribution> findByUser(Long userId) {
-        return find.query().where().eq("user.id", userId).findList();
+        return find.query()
+                .where()
+                .eq("user.id", userId)
+                .findList();
     }
 
-    /** Total amount contributed to a chama */
     public static Double totalForChama(Long chamaId) {
         return find.query()
                 .where()
@@ -62,7 +71,7 @@ public class Contribution extends Model {
                 .eq("status", "paid")
                 .findList()
                 .stream()
-                .mapToDouble(c -> c.amount)
+                .mapToDouble(c -> c.amount != null ? c.amount : 0.0)
                 .sum();
     }
 }

@@ -1,8 +1,13 @@
-@(user: models.User)
+@(user: models.User, totalSavings: Double, totalMembers: Int, activeLoansSum: Double, csrfToken: String, loans: java.util.List[io.ebean.SqlRow], members: java.util.List[io.ebean.SqlRow], contributions: java.util.List[io.ebean.SqlRow])
+@import scala.jdk.CollectionConverters._
 @main("Chama Admin Dashboard | ChamaApp", showHeader = false) {
 
-<div class="dash-root">
-    <aside class="sidebar">
+   <input type="hidden" id="csrfToken" value="@csrfToken">
+
+   @defining(loans.asScala.toList) { loanRows =>
+
+   <div class="dash-root">
+<aside class="sidebar">
         <div class="sidebar-brand">
             <span class="brand-dot"></span>
             <div>
@@ -22,7 +27,7 @@
             <button class="nav-item" onclick="showSection('loans')">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>
                 Loan Requests
-                <span class="nav-badge" id="loanBadge">3</span>
+                <span class="nav-badge" id="loanBadge">@loanRows.count(loan => Option(loan.getString("approval_status")).getOrElse("pending") == "pending")</span>
             </button>
             <button class="nav-item" onclick="showSection('meetings')">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -74,39 +79,55 @@
                 <div class="stats-grid stats-grid--admin">
                     <div class="stat-card">
                         <p class="stat-label">Total Savings</p>
-                        <p class="stat-value green">Ksh 745,389</p>
+                        <p class="stat-value green">Ksh @("%,.2f".format(totalSavings))</p>
                         <p class="stat-sub">This Cycle</p>
                     </div>
                     <div class="stat-card">
                         <p class="stat-label">Total Members</p>
-                        <p class="stat-value">24</p>
-                        <p class="stat-sub">2 Inactive</p>
+                        <p class="stat-value">@totalMembers</p>
+                        <p class="stat-sub">Registered in this chama</p>
                     </div>
                     <div class="stat-card">
                         <p class="stat-label">Pending Loans</p>
-                        <p class="stat-value amber">3</p>
-                        <p class="stat-sub">Awaiting Approval</p>
+                        <p class="stat-value amber">@loanRows.count(loan => Option(loan.getString("approval_status")).getOrElse("pending") == "pending")</p>
+                        <p class="stat-sub">Awaiting approval</p>
                     </div>
                     <div class="stat-card">
-                        <p class="stat-label">Defaulters</p>
-                        <p class="stat-value red">2</p>
-                        <p class="stat-sub">Overdue Payment</p>
+                        <p class="stat-label">Approved Loans</p>
+                        <p class="stat-value green">@loanRows.count(loan => Option(loan.getString("approval_status")).getOrElse("") == "approved")</p>
+                        <p class="stat-sub">Approved applications</p>
                     </div>
                 </div>
                 <div class="table-section">
                     <div class="table-header">
-                        <h2 class="section-title" style="margin:0">Contributions — April 2026</h2>
-                        <span class="table-header-sub">Ksh 6,000 per member</span>
+                        <h2 class="section-title" style="margin:0">Recent Contributions</h2>
+                        <span class="table-header-sub">Latest contribution records</span>
                     </div>
                     <div class="table-wrap">
                         <table class="data-table">
-                            <thead><tr><th>Member</th><th>Role</th><th>Amount</th><th>Paid On</th><th>Status</th><th>Action</th></tr></thead>
+                            <thead><tr><th>Member</th><th>Chama</th><th>Amount</th><th>Paid On</th><th>Status</th></tr></thead>
                             <tbody>
-                            <tr><td class="td-name">Ben Doe</td><td>Member</td><td class="td-mono">Ksh 6,000</td><td class="td-date">30 Mar 2026</td><td><span class="status-pill green">Paid</span></td><td><span class="action-pill approved">Approved</span></td></tr>
-                            <tr><td class="td-name">Pape Rstac</td><td>Member</td><td class="td-mono">Ksh 6,000</td><td class="td-date">29 Mar 2026</td><td><span class="status-pill green">Paid</span></td><td><span class="action-pill approved">Approved</span></td></tr>
-                            <tr><td class="td-name">Blueb Ills</td><td>Member</td><td class="td-mono">Ksh 6,000</td><td class="td-date">28 Mar 2026</td><td><span class="status-pill green">Paid</span></td><td><span class="action-pill approved">Approved</span></td></tr>
-                            <tr><td class="td-name">Gt Bread</td><td>Member</td><td class="td-mono">—</td><td class="td-date">—</td><td><span class="status-pill red">Missed</span></td><td><span class="action-pill denied">Remind</span></td></tr>
-                            <tr><td class="td-name">Mon Cherie</td><td>Treasurer</td><td class="td-mono">—</td><td class="td-date">—</td><td><span class="status-pill amber">Pending</span></td><td><span class="action-pill pending">Awaiting</span></td></tr>
+                                @if(contributions.isEmpty) {
+                                    <tr><td colspan="5">No contributions have been recorded yet.</td></tr>
+                                } else {
+                                    @for(row <- contributions.asScala) {
+                                        <tr>
+                                            <td class="td-name">@row.getString("member_name")</td>
+                                            <td>@row.getString("chama_name")</td>
+                                            <td class="td-mono">Ksh @("%,.2f".format(row.getDouble("amount")))</td>
+                                            <td class="td-date">@{Option(row.getString("paid_date")).getOrElse("—")}</td>
+                                            <td>
+                                                @if(Option(row.getString("contribution_status")).getOrElse("").equalsIgnoreCase("paid")) {
+                                                    <span class="status-pill green">Paid</span>
+                                                } else if(Option(row.getString("contribution_status")).getOrElse("").equalsIgnoreCase("test")) {
+                                                    <span class="status-pill amber">Test Entry</span>
+                                                } else {
+                                                    <span class="status-pill amber">@{Option(row.getString("contribution_status")).getOrElse("Unknown")}</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
                             </tbody>
                         </table>
                     </div>
@@ -119,82 +140,241 @@
                 <div class="stats-grid stats-grid--admin">
                     <div class="stat-card">
                         <p class="stat-label">Total Collected</p>
-                        <p class="stat-value green">Ksh 138,000</p>
-                        <p class="stat-sub">This cycle</p>
+                        <p class="stat-value green">Ksh @("%,.2f".format(totalSavings))</p>
+                        <p class="stat-sub">Paid contributions only</p>
                     </div>
                     <div class="stat-card">
-                        <p class="stat-label">Members Paid</p>
-                        <p class="stat-value">23</p>
-                        <p class="stat-sub">of 24 members</p>
+                        <p class="stat-label">Members</p>
+                        <p class="stat-value">@totalMembers</p>
+                        <p class="stat-sub">Registered chama members</p>
                     </div>
                     <div class="stat-card">
-                        <p class="stat-label">Defaulters</p>
-                        <p class="stat-value red">1</p>
-                        <p class="stat-sub">Gt Bread</p>
-                    </div>
-                    <div class="stat-card">
-                        <p class="stat-label">Pending</p>
-                        <p class="stat-value amber">1</p>
-                        <p class="stat-sub">Mon Cherie</p>
+                        <p class="stat-label">Contribution Records</p>
+                        <p class="stat-value">@contributions.size</p>
+                        <p class="stat-sub">Latest records shown below</p>
                     </div>
                 </div>
-                <div class="table-section">
+
+                <div class="table-section" style="margin-bottom:24px">
                     <div class="table-header">
-                        <h2 class="section-title" style="margin:0">All Members — April 2026</h2>
-                        <span class="table-header-sub">Ksh 6,000 target</span>
+                        <h2 class="section-title" style="margin:0">Monthly Obligations</h2>
+                        <span class="table-header-sub">Generate and review member contributions</span>
+                    </div>
+                    <div style="padding:20px">
+                        <form id="generateMonthlyForm">
+                            <label>
+                                Contribution month
+                                <input id="monthlyPeriod" type="month" required
+                                       style="display:block;width:100%;max-width:260px;padding:10px;margin-top:6px">
+                            </label>
+                            <button id="generateMonthlyButton" type="submit"
+                                    class="btn btn-primary" style="margin-top:12px">
+                                Generate Monthly Obligations
+                            </button>
+                            <p id="monthlyGenerationMessage" role="status"
+                               style="margin-top:12px"></p>
+                        </form>
                     </div>
                     <div class="table-wrap">
                         <table class="data-table">
-                            <thead><tr><th>Member</th><th>Phone</th><th>Amount</th><th>Paid On</th><th>Status</th><th>Action</th></tr></thead>
+                            <thead>
+                                <tr>
+                                    <th>Member</th>
+                                    <th>Expected</th>
+                                    <th>Paid</th>
+                                    <th>Due Date</th>
+                                    <th>Period</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
                             <tbody>
-                            <tr><td class="td-name">Ben Doe</td><td>0712 000 001</td><td class="td-mono">Ksh 6,000</td><td class="td-date">30 Mar</td><td><span class="status-pill green">Paid</span></td><td><span class="action-pill approved">Approved</span></td></tr>
-                            <tr><td class="td-name">Pape Rstac</td><td>0712 000 002</td><td class="td-mono">Ksh 6,000</td><td class="td-date">29 Mar</td><td><span class="status-pill green">Paid</span></td><td><span class="action-pill approved">Approved</span></td></tr>
-                            <tr><td class="td-name">Blueb Ills</td><td>0712 000 003</td><td class="td-mono">Ksh 6,000</td><td class="td-date">28 Mar</td><td><span class="status-pill green">Paid</span></td><td><span class="action-pill approved">Approved</span></td></tr>
-                            <tr><td class="td-name">Gt Bread</td><td>0712 000 004</td><td class="td-mono">—</td><td class="td-date">—</td><td><span class="status-pill red">Missed</span></td><td><span class="action-pill denied">Send Reminder</span></td></tr>
-                            <tr><td class="td-name">Mon Cherie</td><td>0712 000 005</td><td class="td-mono">—</td><td class="td-date">—</td><td><span class="status-pill amber">Pending</span></td><td><span class="action-pill pending">Awaiting</span></td></tr>
+                                @if(contributions.isEmpty) {
+                                    <tr><td colspan="6">No contribution obligations found.</td></tr>
+                                } else {
+                                    @for(row <- contributions.asScala) {
+                                        <tr>
+                                            <td class="td-name">@row.getString("member_name")</td>
+                                            <td class="td-mono">Ksh @("%,.2f".format(row.getDouble("expected_amount")))</td>
+                                            <td class="td-mono">Ksh @("%,.2f".format(row.getDouble("amount")))</td>
+                                            <td class="td-date">@{Option(row.getString("due_date_label")).getOrElse("—")}</td>
+                                            <td>@{Option(row.getString("period_name")).getOrElse("—")}</td>
+                                            <td>
+                                                @if(Option(row.getString("contribution_status")).getOrElse("").equalsIgnoreCase("paid")) {
+                                                    <span class="status-pill green">Paid</span>
+                                                } else {
+                                                    <span class="status-pill amber">@{Option(row.getString("contribution_status")).getOrElse("Unknown")}</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="table-section" style="margin-bottom:24px">
+                    <div class="table-header">
+                        <h2 class="section-title" style="margin:0">Record Contribution</h2>
+                        <span class="table-header-sub">Record a member payment</span>
+                    </div>
+                    <div style="padding:20px">
+                        <form id="recordContributionForm">
+                            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px">
+                                <label>
+                                    Member
+                                    <select id="contributionMember" required style="display:block;width:100%;padding:10px;margin-top:6px">
+                                        <option value="">Select member</option>
+                                        @for(member <- members.asScala) {
+                                            <option value="@{member.getLong("member_id")}">@{Option(member.getString("member_name")).getOrElse("Unnamed member")}</option>
+                                        }
+                                    </select>
+                                </label>
+                                <label>
+                                    Amount (Ksh)
+                                    <input id="contributionAmount" type="number" min="0.01" step="0.01" required placeholder="e.g. 2000" style="display:block;width:100%;padding:10px;margin-top:6px">
+                                </label>
+                                <label>
+                                    Contribution period
+                                    <input id="contributionPeriod" type="month" required style="display:block;width:100%;padding:10px;margin-top:6px">
+                                </label>
+                                <label>
+                                    Payment method
+                                    <select id="contributionMethod" required style="display:block;width:100%;padding:10px;margin-top:6px">
+                                        <option value="M-PESA">M-PESA</option>
+                                        <option value="CASH">Cash</option>
+                                    </select>
+                                </label>
+                            </div>
+                            <p style="font-size:13px;margin-top:8px;color:var(--text-secondary)">
+                                Only record a real payment after it has actually been received and verified.
+                            </p>
+                            <button id="recordContributionButton" type="submit" class="btn btn-primary" style="margin-top:12px">
+                                Record Contribution
+                            </button>
+                            <p id="contributionFormMessage" role="status" style="margin-top:12px"></p>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="table-section">
+                    <div class="table-header">
+                        <h2 class="section-title" style="margin:0">Recent Contributions</h2>
+                        <span class="table-header-sub">Latest 20 records</span>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Member</th><th>Chama</th><th>Amount</th><th>Paid On</th><th>Status</th></tr></thead>
+                            <tbody>
+                                @if(contributions.isEmpty) {
+                                    <tr><td colspan="5">No contributions have been recorded yet.</td></tr>
+                                } else {
+                                    @for(row <- contributions.asScala) {
+                                        <tr>
+                                            <td class="td-name">@row.getString("member_name")</td>
+                                            <td>@row.getString("chama_name")</td>
+                                            <td class="td-mono">Ksh @("%,.2f".format(row.getDouble("amount")))</td>
+                                            <td class="td-date">@{Option(row.getString("paid_date")).getOrElse("—")}</td>
+                                            <td>
+                                                @if(Option(row.getString("contribution_status")).getOrElse("").equalsIgnoreCase("paid")) {
+                                                    <span class="status-pill green">Paid</span>
+                                                } else if(Option(row.getString("contribution_status")).getOrElse("").equalsIgnoreCase("test")) {
+                                                    <span class="status-pill amber">Test Entry</span>
+                                                } else {
+                                                    <span class="status-pill amber">@{Option(row.getString("contribution_status")).getOrElse("Unknown")}</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                }
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- ═══ SECTION: LOAN REQUESTS ═══ -->
+<!-- ═══ SECTION: LOAN REQUESTS ═══ -->
             <div id="section-loans" style="display:none">
                 <h2 class="section-title">Loan Requests</h2>
+
                 <div class="stats-grid stats-grid--admin">
                     <div class="stat-card">
                         <p class="stat-label">Pending</p>
-                        <p class="stat-value amber">3</p>
+                        <p class="stat-value amber">@loanRows.count(loan => Option(loan.getString("approval_status")).getOrElse("pending") == "pending")</p>
                         <p class="stat-sub">Awaiting review</p>
                     </div>
                     <div class="stat-card">
-                        <p class="stat-label">Active Loans</p>
-                        <p class="stat-value">12</p>
-                        <p class="stat-sub">Currently disbursed</p>
+                        <p class="stat-label">Approved</p>
+                        <p class="stat-value green">@loanRows.count(loan => Option(loan.getString("approval_status")).getOrElse("") == "approved")</p>
+                        <p class="stat-sub">Approved applications</p>
                     </div>
                     <div class="stat-card">
-                        <p class="stat-label">Total Lent</p>
-                        <p class="stat-value">Ksh 1.9M</p>
-                        <p class="stat-sub">All time</p>
+                        <p class="stat-label">Total Applications</p>
+                        <p class="stat-value">@loanRows.size</p>
+                        <p class="stat-sub">All loan applications</p>
                     </div>
                     <div class="stat-card">
-                        <p class="stat-label">Overdue</p>
-                        <p class="stat-value red">1</p>
-                        <p class="stat-sub">Needs follow-up</p>
+                        <p class="stat-label">Rejected</p>
+                        <p class="stat-value red">@loanRows.count(loan => Option(loan.getString("approval_status")).getOrElse("") == "rejected")</p>
+                        <p class="stat-sub">Rejected applications</p>
                     </div>
                 </div>
+
                 <div class="table-section">
                     <div class="table-header">
-                        <h2 class="section-title" style="margin:0">Pending Requests</h2>
-                        <span class="table-header-sub">Require your approval</span>
+                        <h2 class="section-title" style="margin:0">Loan Applications</h2>
+                        <span class="table-header-sub">Applications from your chama members</span>
                     </div>
+
                     <div class="table-wrap">
                         <table class="data-table">
-                            <thead><tr><th>Member</th><th>Amount</th><th>Reason</th><th>Applied</th><th>Status</th><th>Action</th></tr></thead>
+                            <thead>
+                                <tr>
+                                    <th>Member</th>
+                                    <th>Amount</th>
+                                    <th>Scoring Assessment</th>
+                                    <th>Applied</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
                             <tbody>
-                            <tr><td class="td-name">Mon Cherie</td><td class="td-mono">Ksh 10,000</td><td>School fees</td><td class="td-date">05 Apr 2026</td><td><span class="status-pill amber">Pending</span></td><td class="td-actions"><button class="btn-view">Approve</button><button class="btn-suspend">Reject</button></td></tr>
-                            <tr><td class="td-name">Pape Rstac</td><td class="td-mono">Ksh 15,000</td><td>Business</td><td class="td-date">03 Apr 2026</td><td><span class="status-pill amber">Pending</span></td><td class="td-actions"><button class="btn-view">Approve</button><button class="btn-suspend">Reject</button></td></tr>
-                            <tr><td class="td-name">Blueb Ills</td><td class="td-mono">Ksh 5,000</td><td>Medical</td><td class="td-date">01 Apr 2026</td><td><span class="status-pill amber">Pending</span></td><td class="td-actions"><button class="btn-view">Approve</button><button class="btn-suspend">Reject</button></td></tr>
+                                @if(loanRows.isEmpty) {
+                                    <tr>
+                                        <td colspan="6">No loan applications found.</td>
+                                    </tr>
+                                }
+
+                                @for(loan <- loanRows) {
+                                    <tr data-loan-id="@loan.getLong("loan_id")">
+                                        <td class="td-name">@loan.getString("member_name")</td>
+                                        <td class="td-mono">
+                                            Ksh @("%,.2f".format(loan.getDouble("amount")))
+                                        </td>
+                                        <td>@loan.getString("loan_reason")</td>
+                                        <td class="td-date">@loan.getString("applied_date")</td>
+                                        <td>
+                                            @if(loan.getString("approval_status") == "approved") {
+                                                <span class="status-pill green" data-loan-status>Approved</span>
+                                            } else if(loan.getString("approval_status") == "rejected") {
+                                                <span class="status-pill red" data-loan-status>Rejected</span>
+                                            } else {
+                                                <span class="status-pill amber" data-loan-status>Pending</span>
+                                            }
+                                        </td>
+                                        <td class="td-actions">
+                                            @if(loan.getString("approval_status") == "pending") {
+                                                <button
+                                                    type="button"
+                                                    class="btn-view"
+                                                    data-approve-loan="@loan.getLong("loan_id")">
+                                                    Approve
+                                                </button>
+                                            } else {
+                                                <span>—</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
                             </tbody>
                         </table>
                     </div>
@@ -237,31 +417,50 @@
             <div id="section-members" style="display:none">
                 <h2 class="section-title">Members</h2>
                 <div class="stats-grid stats-grid--admin">
-                    <div class="stat-card"><p class="stat-label">Total</p><p class="stat-value">24</p><p class="stat-sub">Registered members</p></div>
-                    <div class="stat-card"><p class="stat-label">Active</p><p class="stat-value green">22</p><p class="stat-sub">Contributing</p></div>
-                    <div class="stat-card"><p class="stat-label">Inactive</p><p class="stat-value amber">2</p><p class="stat-sub">Not contributing</p></div>
-                    <div class="stat-card"><p class="stat-label">Defaulters</p><p class="stat-value red">1</p><p class="stat-sub">Missed payments</p></div>
+                    <div class="stat-card">
+                        <p class="stat-label">Total Members</p>
+                        <p class="stat-value">@totalMembers</p>
+                        <p class="stat-sub">Registered chama members</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">Members With Payments</p>
+                        <p class="stat-value">@members.asScala.count(row => row.getString("last_paid_date") != null)</p>
+                        <p class="stat-sub">Have a recorded payment</p>
+                    </div>
+                    <div class="stat-card">
+                        <p class="stat-label">No Recorded Payment</p>
+                        <p class="stat-value">@members.asScala.count(row => row.getString("last_paid_date") == null)</p>
+                        <p class="stat-sub">No payment date on record</p>
+                    </div>
                 </div>
                 <div class="table-section">
                     <div class="table-header">
                         <h2 class="section-title" style="margin:0">Member Directory</h2>
-                        <button class="btn-add-chama">+ Add Member</button>
                     </div>
                     <div class="table-wrap">
                         <table class="data-table">
-                            <thead><tr><th>Name</th><th>Phone</th><th>Role</th><th>Joined</th><th>Status</th><th>Action</th></tr></thead>
+                            <thead><tr><th>Name</th><th>Phone</th><th>Role</th><th>Joined</th><th>Last Payment</th></tr></thead>
                             <tbody>
-                            <tr><td class="td-name">Ben Doe</td><td>0712 000 001</td><td>Member</td><td class="td-date">Jan 2025</td><td><span class="status-pill green">Active</span></td><td><button class="btn-view">View</button></td></tr>
-                            <tr><td class="td-name">Pape Rstac</td><td>0712 000 002</td><td>Member</td><td class="td-date">Jan 2025</td><td><span class="status-pill green">Active</span></td><td><button class="btn-view">View</button></td></tr>
-                            <tr><td class="td-name">Mon Cherie</td><td>0712 000 005</td><td>Treasurer</td><td class="td-date">Jan 2025</td><td><span class="status-pill green">Active</span></td><td><button class="btn-view">View</button></td></tr>
-                            <tr><td class="td-name">Gt Bread</td><td>0712 000 004</td><td>Member</td><td class="td-date">Mar 2025</td><td><span class="status-pill red">Defaulter</span></td><td><button class="btn-view">View</button></td></tr>
+                                @if(members.isEmpty) {
+                                    <tr><td colspan="5">No members are currently linked to your chama.</td></tr>
+                                } else {
+                                    @for(row <- members.asScala) {
+                                        <tr>
+                                            <td class="td-name">@row.getString("member_name")</td>
+                                            <td>@{Option(row.getString("phone")).getOrElse("—")}</td>
+                                            <td>@{Option(row.getString("member_role")).getOrElse("Member")}</td>
+                                            <td class="td-date">@{Option(row.getString("joined_date")).getOrElse("—")}</td>
+                                            <td class="td-date">@{Option(row.getString("last_paid_date")).getOrElse("No payment recorded")}</td>
+                                        </tr>
+                                    }
+                                }
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- ═══ SECTION: NOTIFICATIONS ═══ -->
+<!-- ═══ SECTION: NOTIFICATIONS ═══ -->
             <div id="section-notifications" style="display:none">
                 <h2 class="section-title">Notifications</h2>
                 <div class="notif-full-list">
@@ -292,6 +491,133 @@
 </div>
 
 <script>
+    const monthlyForm = document.getElementById('generateMonthlyForm');
+    if (monthlyForm) {
+        const monthInput = document.getElementById('monthlyPeriod');
+        const now = new Date();
+        monthInput.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+        monthlyForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const period = monthInput.value;
+            const message = document.getElementById('monthlyGenerationMessage');
+            const button = document.getElementById('generateMonthlyButton');
+
+            if (!/^\d{4}-\d{2}$/.test(period)) {
+                message.textContent = 'Select a valid contribution month.';
+                return;
+            }
+
+            const parts = period.split('-').map(Number);
+            const lastDay = new Date(parts[0], parts[1], 0).getDate();
+            const dueDate = `${period}-${String(lastDay).padStart(2, '0')}`;
+
+            button.disabled = true;
+            button.textContent = 'Generating...';
+            message.textContent = '';
+
+            try {
+                const csrfToken = document.getElementById('csrfToken').value;
+                const response = await fetch('/api/contributions/generate-monthly', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Csrf-Token': csrfToken
+                    },
+                    body: JSON.stringify({
+                        periodName: period,
+                        dueDate: dueDate
+                    })
+                });
+
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.error || 'Could not generate monthly obligations.');
+                }
+
+                message.textContent = `${result.message} Obligations: ${result.obligations}.`;
+                setTimeout(() => window.location.reload(), 1200);
+            } catch (error) {
+                message.textContent = error.message || 'Monthly generation failed.';
+                message.style.color = '#dc6b6b';
+                button.disabled = false;
+                button.textContent = 'Generate Monthly Obligations';
+            }
+        });
+    }
+
+    const contributionPeriodInput = document.getElementById('contributionPeriod');
+    if (contributionPeriodInput) {
+        const currentDate = new Date();
+        contributionPeriodInput.value =
+            `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    async function submitContribution(event) {
+        event.preventDefault();
+
+        const memberId = Number(document.getElementById('contributionMember').value);
+        const amount = Number(document.getElementById('contributionAmount').value);
+        const periodName = document.getElementById('contributionPeriod').value.trim();
+        const paymentMethod = document.getElementById('contributionMethod').value;
+        const button = document.getElementById('recordContributionButton');
+        const message = document.getElementById('contributionFormMessage');
+
+        if (!Number.isInteger(memberId) || memberId <= 0 ||
+            !Number.isFinite(amount) || amount <= 0 ||
+            !/^\d{4}-\d{2}$/.test(periodName)) {
+            message.textContent = 'Select a member and enter a valid amount and period.';
+            return;
+        }
+
+        if (!window.confirm(
+            'Confirm that this payment has actually been received and verified.'
+        )) {
+            return;
+        }
+
+        button.disabled = true;
+        button.textContent = 'Recording...';
+        message.textContent = '';
+
+        try {
+            const response = await fetch('/api/contributions/record', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Csrf-Token': '@csrfToken'
+                },
+                body: JSON.stringify({
+                    userId: memberId,
+                    amount: amount,
+                    periodName: periodName,
+                    paymentMethod: paymentMethod
+                })
+            });
+
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.error || 'Could not record contribution.');
+            }
+
+            message.textContent = result.message;
+            message.style.color = 'var(--text-primary)';
+            setTimeout(() => window.location.reload(), 1200);
+        } catch (error) {
+            message.textContent = error.message || 'Contribution recording failed.';
+            message.style.color = '#dc6b6b';
+            button.disabled = false;
+            button.textContent = 'Record Contribution';
+        }
+    }
+
+    const contributionForm = document.getElementById('recordContributionForm');
+    if (contributionForm) {
+        contributionForm.addEventListener('submit', submitContribution);
+    }
+
     function showSection(name) {
         document.querySelectorAll('.dash-content > div[id^="section-"]').forEach(el => {
             el.style.display = 'none';
@@ -317,7 +643,6 @@
         };
         document.getElementById('headerLabel').textContent = labels[name] || 'ADMIN DASHBOARD';
 
-        // Hide loan badge once they've viewed loans
         if (name === 'loans') {
             const badge = document.getElementById('loanBadge');
             if (badge) badge.style.display = 'none';
@@ -325,4 +650,5 @@
     }
 </script>
 
+}
 }

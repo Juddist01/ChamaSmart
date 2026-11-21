@@ -1,0 +1,29 @@
+[info] welcome to sbt 1.11.7 (Oracle Corporation Java 17.0.12)
+[info] loading global plugins from /home/jude/.sbt/1.0/plugins
+[info] loading settings for project try-chama-build from plugins.sbt...
+[info] loading project definition from /home/jude/Desktop/ChamaApp/try-chama/project
+[info] loading settings for project root from build.sbt...
+[info]   __              __
+[info]   \ \     ____   / /____ _ __  __
+[info]    \ \   / __ \ / // __ `// / / /
+[info]    / /  / /_/ // // /_/ // /_/ /
+[info]   /_/  / .___//_/ \__,_/ \__, /
+[info]       /_/               /____/
+[info]
+[info] Version 3.0.9 running Java 17.0.12
+[info]
+[info] Play is run entirely by the community. Please consider contributing and/or donating:
+[info] https://www.playframework.com/sponsors
+[info]
+[info] compiling 1 Scala source and 1 Java source to /home/jude/Desktop/ChamaApp/try-chama/target/scala-2.13/classes ...
+[info] done compiling
+2026-11-04 14:33:49 [34mINFO [0;39m [36mp.a.http.HttpErrorHandlerExceptions[0;39m [35m[0;39m Registering exception handler: guice-provision-exception-handler
+2026-11-04 14:34:02 [34mINFO [0;39m [36mplay.api.db.HikariCPConnectionPool[0;39m [35m[0;39m Creating Pool for datasource 'default'
+2026-11-04 14:34:14 [31mWARN [0;39m [36mp.f.headers.SecurityHeadersConfig[0;39m [35m[0;39m play.filters.headers.contentSecurityPolicy is deprecated in 2.7.0.  Please use play.filters.csp.CSPFilter instead.
+2026-11-04 14:34:18 [34mINFO [0;39m [36mplay.api.db.HikariCPConnectionPool[0;39m [35m[0;39m Shutting down connection pool.
+2026-11-04 14:34:19 [34mINFO [0;39m [36mp.a.http.HttpErrorHandlerExceptions[0;39m [35m[0;39m Registering exception handler: guice-provision-exception-handler
+2026-11-04 14:34:21 [34mINFO [0;39m [36mplay.api.db.HikariCPConnectionPool[0;39m [35m[0;39m Creating Pool for datasource 'default'
+2026-11-04 14:34:22 [31mWARN [0;39m [36mp.f.headers.SecurityHeadersConfig[0;39m [35m[0;39m play.filters.headers.contentSecurityPolicy is deprecated in 2.7.0.  Please use play.filters.csp.CSPFilter instead.
+2026-11-04 14:34:23 [34mINFO [0;39m [36mplay.api.db.HikariCPConnectionPool[0;39m [35m[0;39m Shutting down connection pool.
+[info] Passed: Total 2, Failed 0, Errors 0, Passed 2
+[success] Total time: 106 s (0:01:46.0), completed Nov 4, 2026, 2:34:25 PM

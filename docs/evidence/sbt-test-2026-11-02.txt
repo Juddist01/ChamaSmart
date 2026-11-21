@@ -1,0 +1,27 @@
+[info] welcome to sbt 1.11.7 (Oracle Corporation Java 17.0.12)
+[info] loading global plugins from /home/jude/.sbt/1.0/plugins
+[info] loading settings for project try-chama-build from plugins.sbt...
+[info] loading project definition from /home/jude/Desktop/ChamaApp/try-chama/project
+[info] loading settings for project root from build.sbt...
+[info]   __              __
+[info]   \ \     ____   / /____ _ __  __
+[info]    \ \   / __ \ / // __ `// / / /
+[info]    / /  / /_/ // // /_/ // /_/ /
+[info]   /_/  / .___//_/ \__,_/ \__, /
+[info]       /_/               /____/
+[info]
+[info] Version 3.0.9 running Java 17.0.12
+[info]
+[info] Play is run entirely by the community. Please consider contributing and/or donating:
+[info] https://www.playframework.com/sponsors
+[info]
+2026-11-02 06:19:55 [34mINFO [0;39m [36mp.a.http.HttpErrorHandlerExceptions[0;39m [35m[0;39m Registering exception handler: guice-provision-exception-handler
+2026-11-02 06:19:59 [34mINFO [0;39m [36mplay.api.db.HikariCPConnectionPool[0;39m [35m[0;39m Creating Pool for datasource 'default'
+2026-11-02 06:20:09 [31mWARN [0;39m [36mp.f.headers.SecurityHeadersConfig[0;39m [35m[0;39m play.filters.headers.contentSecurityPolicy is deprecated in 2.7.0.  Please use play.filters.csp.CSPFilter instead.
+2026-11-02 06:20:13 [34mINFO [0;39m [36mplay.api.db.HikariCPConnectionPool[0;39m [35m[0;39m Shutting down connection pool.
+2026-11-02 06:20:13 [34mINFO [0;39m [36mp.a.http.HttpErrorHandlerExceptions[0;39m [35m[0;39m Registering exception handler: guice-provision-exception-handler
+2026-11-02 06:20:14 [34mINFO [0;39m [36mplay.api.db.HikariCPConnectionPool[0;39m [35m[0;39m Creating Pool for datasource 'default'
+2026-11-02 06:20:15 [31mWARN [0;39m [36mp.f.headers.SecurityHeadersConfig[0;39m [35m[0;39m play.filters.headers.contentSecurityPolicy is deprecated in 2.7.0.  Please use play.filters.csp.CSPFilter instead.
+2026-11-02 06:20:15 [34mINFO [0;39m [36mplay.api.db.HikariCPConnectionPool[0;39m [35m[0;39m Shutting down connection pool.
+[info] Passed: Total 2, Failed 0, Errors 0, Passed 2
+[success] Total time: 47 s, completed Nov 2, 2026, 6:20:16 AM

@@ -1,5 +1,6 @@
-@()
+@(csrfToken: String)
 @main("Sign In | ChamaApp") {
+<input type="hidden" id="csrfToken" value="@csrfToken">
 
 <div class="auth-page">
 

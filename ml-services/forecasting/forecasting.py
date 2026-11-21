@@ -25,6 +25,10 @@ MIN_HISTORY = 8
 MAX_HISTORY = 520
 MAX_WEEKS = 12
 
+# Synthetic member IDs must not be assumed to identify real ChamaSmart users.
+# Enable only for controlled experiments with a verified member-to-model mapping.
+ALLOW_MEMBER_ARIMA = os.environ.get("ALLOW_MEMBER_ARIMA", "false").lower() == "true"
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("forecasting")
 
@@ -96,12 +100,16 @@ def forecast():
 
     meta = STATE["meta"]
     series = np.asarray(history, dtype=float)
-    entry = STATE["models"].get(str(member_id))
+    entry = STATE["models"].get(str(member_id)) if ALLOW_MEMBER_ARIMA else None
 
     if entry is None:
         values = np.repeat(series[-4:].mean(), weeks)
         status, method = "baseline", "moving_average_4"
-        note = "No trained model for this member; showing a 4-week moving average, not an ARIMA forecast."
+        note = (
+            "Member-specific ARIMA is disabled; showing a 4-week moving average baseline."
+            if not ALLOW_MEMBER_ARIMA
+            else "No trained model for this member; showing a 4-week moving average, not an ARIMA forecast."
+        )
     else:
         try:
             res = ARIMA(series, order=tuple(entry["order"])).smooth(np.asarray(entry["params"]))

@@ -1,0 +1,15 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.2.0, pluggy-1.7.0 -- /home/jude/Desktop/ChamaApp/.venv-credit/bin/python
+cachedir: .pytest_cache
+rootdir: /home/jude/Desktop/ChamaApp/ml-services/credit-scoring
+collecting ... collected 7 items
+
+tests/test_api.py::test_health_ok PASSED                                 [ 14%]
+tests/test_api.py::test_valid_request_returns_score_and_factors PASSED   [ 28%]
+tests/test_api.py::test_missing_field_is_rejected PASSED                 [ 42%]
+tests/test_api.py::test_non_numeric_value_is_rejected PASSED             [ 57%]
+tests/test_api.py::test_not_json_is_rejected PASSED                      [ 71%]
+tests/test_api.py::test_value_outside_training_range_needs_review PASSED [ 85%]
+tests/test_api.py::test_request_id_is_echoed PASSED                      [100%]
+
+============================== 7 passed in 5.44s ===============================

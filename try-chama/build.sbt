@@ -12,6 +12,7 @@ libraryDependencies ++= Seq(
   guice,
   jdbc,
   javaJpa,
+  javaWs,
   evolutions,
   "javax.persistence" % "javax.persistence-api" % "2.2",
   "com.auth0" % "java-jwt" % "4.4.0",
@@ -37,3 +38,6 @@ dependencyOverrides ++= Seq(
 
 // Make Scala module explicit so we control its version
 libraryDependencies += "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.14.3"
+
+//BCrypt Dependency
+libraryDependencies += "org.mindrot" % "jbcrypt" % "0.4"

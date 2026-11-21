@@ -8,8 +8,27 @@ logs/
 __pycache__/
 *.pyc
 venv/
+.venv/
+.venv-credit/
 .env
 *.pkl
 *.h5
 .DS_Store
 
+# Local database backups
+chama_app_before_*.sql
+
+# Local working backups
+*.backup
+*.backup_*
+*.before_*
+backup_before_*/
+
+# Python test and cache artifacts
+.pytest_cache/
+.coverage
+
+# Local development and training artifacts
+.venv-credit/
+runs/
+backups/
