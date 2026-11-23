@@ -8,6 +8,16 @@ RUN curl -fsSL "https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt
 ENV PATH="/opt/sbt/bin:${PATH}"
 WORKDIR /src
 COPY . .
+
+RUN mkdir -p /root/.sbt && printf '%s\n' \
+    '[repositories]' \
+    'local' \
+    'maven-central: https://repo.maven.apache.org/maven2/' \
+    'sbt-maven-releases: https://repo.scala-sbt.org/scalasbt/maven-releases' \
+    > /root/.sbt/repositories
+
+ENV JDK_JAVA_OPTIONS="-Dsbt.repository.config=/root/.sbt/repositories -Dsbt.override.build.repos=true"
+
 RUN sbt stage
 
 # ---- Stage 2: small runtime image ----
