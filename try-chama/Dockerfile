@@ -12,7 +12,7 @@ COPY . .
 RUN mkdir -p /root/.sbt && printf '%s\n' \
     '[repositories]' \
     'local' \
-    'maven-central: https://repo.maven.apache.org/maven2/' \
+    'google-maven-central: https://maven-central.storage-download.googleapis.com/maven2/' \
     'sbt-maven-releases: https://repo.scala-sbt.org/scalasbt/maven-releases' \
     > /root/.sbt/repositories
 
