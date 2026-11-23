@@ -1,0 +1,57 @@
+services:
+  - type: web
+    name: chamasmart-app
+    runtime: docker
+    plan: free
+    region: singapore
+    rootDir: try-chama
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: "10000"
+      - key: JAVA_TOOL_OPTIONS
+        value: "-XX:MaxRAMPercentage=65.0"
+      - key: DB_URL
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: APPLICATION_SECRET
+        generateValue: true
+      - key: CREDIT_SCORING_URL
+        sync: false
+      - key: FORECASTING_URL
+        sync: false
+      - key: EVOLUTIONS_ENABLED
+        value: "false"
+      - key: EVOLUTIONS_AUTO_APPLY
+        value: "false"
+
+  - type: web
+    name: chamasmart-credit-scoring
+    runtime: docker
+    plan: free
+    region: singapore
+    rootDir: ml-services/credit-scoring
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: "10000"
+
+  - type: web
+    name: chamasmart-forecasting
+    runtime: docker
+    plan: free
+    region: singapore
+    rootDir: ml-services/forecasting
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: "10000"

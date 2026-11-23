@@ -6,4 +6,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY forecasting.py .
 COPY model ./model
 EXPOSE 5002
-CMD ["gunicorn", "-b", "0.0.0.0:5002", "--workers", "2", "--timeout", "60", "forecasting:app"]
+CMD ["sh", "-c", "exec gunicorn -b 0.0.0.0:${PORT:-5002} --workers 2 --timeout 60 forecasting:app"]

@@ -16,4 +16,4 @@ WORKDIR /app
 COPY --from=build /src/target/universal/stage ./
 EXPOSE 9000
 # Starts the launcher script that "sbt stage" created (the one without .bat)
-CMD ["sh", "-c", "exec $(ls bin/* | grep -v '\\.bat$' | head -n 1) -Dhttp.port=9000"]
+CMD ["sh", "-c", "exec $(ls bin/* | grep -v '\\.bat$' | head -n 1) -Dhttp.port=${PORT:-9000}"]

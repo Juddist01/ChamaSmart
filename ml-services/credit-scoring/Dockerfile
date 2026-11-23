@@ -9,4 +9,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY credit_scoring.py .
 COPY model ./model
 EXPOSE 5001
-CMD ["gunicorn", "-b", "0.0.0.0:5001", "--workers", "2", "--timeout", "60", "credit_scoring:app"]
+CMD ["sh", "-c", "exec gunicorn -b 0.0.0.0:${PORT:-5001} --workers 2 --timeout 60 credit_scoring:app"]
