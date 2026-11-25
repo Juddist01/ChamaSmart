@@ -263,6 +263,18 @@ public class HomeController extends Controller {
                 .setParameter("uId", user.id)
                 .findList();
 
+        java.util.List<io.ebean.SqlRow> repaymentClaims =
+                io.ebean.DB.sqlQuery(
+                        "SELECT lr.id AS repayment_id, lr.loan_id, lr.amount, " +
+                        "lr.payment_reference, lr.status, " +
+                        "DATE_FORMAT(lr.submitted_at, '%d %b %Y %H:%i') AS submitted_date, " +
+                        "DATE_FORMAT(lr.reviewed_at, '%d %b %Y %H:%i') AS reviewed_date, " +
+                        "lr.review_note " +
+                        "FROM loan_repayments lr WHERE lr.user_id = :uId " +
+                        "ORDER BY lr.submitted_at DESC, lr.id DESC")
+                .setParameter("uId", user.id)
+                .findList();
+
         String csrfToken = play.filters.csrf.CSRF.getToken(request)
                 .map(play.filters.csrf.CSRF.Token::value)
                 .orElse("");
@@ -270,7 +282,7 @@ public class HomeController extends Controller {
         return ok(views.html.dashboards.member.render(
                 user, mySavings, myActiveLoans, chamaSavings,
                 myContributionCount, monthlyTarget,
-                memberContributions, memberLoans, csrfToken));
+                memberContributions, memberLoans, csrfToken, repaymentClaims));
     }
 
 
@@ -364,6 +376,12 @@ public class HomeController extends Controller {
                 "COALESCE(NULLIF(l.user_name, ''), u.fullname, 'Unknown member') AS member_name, " +
                 "COALESCE(l.amount, 0) AS amount, " +
                 "l.approval_status AS approval_status, " +
+                "COALESCE(l.credit_score, -1) AS credit_score, " +
+                "CASE " +
+                "WHEN LOWER(l.score_reason) LIKE '%risk_band=low%' OR LOWER(l.score_reason) LIKE '%risk band: low%' THEN 'Low' " +
+                "WHEN LOWER(l.score_reason) LIKE '%risk_band=medium%' OR LOWER(l.score_reason) LIKE '%risk band: medium%' THEN 'Medium' " +
+                "WHEN LOWER(l.score_reason) LIKE '%risk_band=high%' OR LOWER(l.score_reason) LIKE '%risk band: high%' THEN 'High' " +
+                "ELSE 'Manual review' END AS risk_band, " +
                 "DATE_FORMAT(l.created_at, '%d %b %Y') AS applied_date, " +
                 "COALESCE(l.score_reason, 'No scoring details available') AS loan_reason " +
                 "FROM loans l " +
@@ -375,6 +393,21 @@ public class HomeController extends Controller {
                 .setParameter("adminId", user.id)
                 .findList();
 
+
+        java.util.List<io.ebean.SqlRow> repaymentReviews =
+                io.ebean.DB.sqlQuery(
+                        "SELECT lr.id AS repayment_id, lr.loan_id, lr.amount, " +
+                        "lr.payment_reference, lr.status, " +
+                        "COALESCE(u.fullname, 'Unknown member') AS member_name, " +
+                        "DATE_FORMAT(lr.submitted_at, '%d %b %Y %H:%i') AS submitted_date " +
+                        "FROM loan_repayments lr " +
+                        "JOIN chama c ON c.chama_id = lr.chama_id " +
+                        "LEFT JOIN user u ON u.id = lr.user_id " +
+                        "WHERE c.admin_id = :adminId " +
+                        "ORDER BY CASE WHEN lr.status = 'pending' THEN 0 ELSE 1 END, " +
+                        "lr.submitted_at DESC, lr.id DESC LIMIT 100")
+                .setParameter("adminId", user.id)
+                .findList();
 
         String csrfToken = play.filters.csrf.CSRF.getToken(request)
                 .map(play.filters.csrf.CSRF.Token::value)
@@ -388,7 +421,8 @@ public class HomeController extends Controller {
                 csrfToken,
                 loans,
                 members,
-                contributions
+                contributions,
+                repaymentReviews
         ));
     }
 

@@ -1,4 +1,5 @@
-@(user: models.User, totalSavings: Double, totalMembers: Int, activeLoansSum: Double, csrfToken: String, loans: java.util.List[io.ebean.SqlRow], members: java.util.List[io.ebean.SqlRow], contributions: java.util.List[io.ebean.SqlRow])
+@(user: models.User, totalSavings: Double, totalMembers: Int, activeLoansSum: Double, csrfToken: String, loans: java.util.List[io.ebean.SqlRow], members: java.util.List[io.ebean.SqlRow], contributions: java.util.List[io.ebean.SqlRow],
+ repaymentReviews: java.util.List[io.ebean.SqlRow])
 @import scala.jdk.CollectionConverters._
 @main("Chama Admin Dashboard | ChamaApp", showHeader = false) {
 
@@ -28,6 +29,11 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12V22H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/></svg>
                 Loan Requests
                 <span class="nav-badge" id="loanBadge">@loanRows.count(loan => Option(loan.getString("approval_status")).getOrElse("pending") == "pending")</span>
+            </button>
+            <button class="nav-item" onclick="showSection('repayments')">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h11a4 4 0 010 8H8"/><path d="M7 6L3 10l4 4"/><path d="M21 14H10"/></svg>
+                Repayment Verification
+                <span class="nav-badge">@repaymentReviews.count(r => "pending".equalsIgnoreCase(r.getString("status")))</span>
             </button>
             <button class="nav-item" onclick="showSection('meetings')">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -350,7 +356,18 @@
                                         <td class="td-mono">
                                             Ksh @("%,.2f".format(loan.getDouble("amount")))
                                         </td>
-                                        <td>@loan.getString("loan_reason")</td>
+                                        <td>
+                                            <strong>@loan.getString("risk_band") risk</strong><br>
+                                            @if(loan.getDouble("credit_score") >= 0) {
+                                                <span>Model score: @("%.0f".format(loan.getDouble("credit_score")))/100</span>
+                                            } else {
+                                                <span>Score unavailable — manual review</span>
+                                            }
+                                            <details style="margin-top:.4rem">
+                                                <summary style="cursor:pointer">Scoring details</summary>
+                                                <small style="overflow-wrap:anywhere">@loan.getString("loan_reason")</small>
+                                            </details>
+                                        </td>
                                         <td class="td-date">@loan.getString("applied_date")</td>
                                         <td>
                                             @if(loan.getString("approval_status") == "approved") {
@@ -366,8 +383,16 @@
                                                 <button
                                                     type="button"
                                                     class="btn-view"
-                                                    data-approve-loan="@loan.getLong("loan_id")">
+                                                    data-loan-action="approve"
+                                                    data-loan-id="@loan.getLong("loan_id")">
                                                     Approve
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="btn-view"
+                                                    data-loan-action="reject"
+                                                    data-loan-id="@loan.getLong("loan_id")">
+                                                    Reject
                                                 </button>
                                             } else {
                                                 <span>—</span>
@@ -378,6 +403,93 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+
+            <!-- ═══ SECTION: REPAYMENT VERIFICATION ═══ -->
+            <div id="section-repayments" style="display:none">
+                <h2 class="section-title">Repayment Verification</h2>
+                <p style="color:var(--text-muted);margin-bottom:1rem">
+                    Verify member payment references before loan balances are updated.
+                </p>
+                <div class="stats-grid stats-grid--admin">
+                    <div class="stat-card">
+                        <p class="stat-label">Pending Verification</p>
+                        <p class="stat-value amber">@repaymentReviews.count(r => "pending".equalsIgnoreCase(r.getString("status")))</p>
+                        <p class="stat-sub">Awaiting your review</p>
+                    </div>
+                </div>
+                <div class="table-section">
+                    <div class="table-header">
+                        <h2 class="section-title" style="margin:0">Member Repayment Claims</h2>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Member</th>
+                                    <th>Loan</th>
+                                    <th>Amount</th>
+                                    <th>Payment Reference</th>
+                                    <th>Submitted</th>
+                                    <th>Status</th>
+                                    <th>Review Note</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if(repaymentReviews.isEmpty) {
+                                    <tr><td colspan="8">No repayment claims have been submitted.</td></tr>
+                                }
+                                @for(claim <- repaymentReviews) {
+                                    <tr data-repayment-id="@claim.getLong("repayment_id")">
+                                        <td class="td-name">@claim.getString("member_name")</td>
+                                        <td>#@claim.getLong("loan_id")</td>
+                                        <td class="td-mono">Ksh @("%,.2f".format(claim.getDouble("amount")))</td>
+                                        <td>@claim.getString("payment_reference")</td>
+                                        <td class="td-date">@claim.getString("submitted_date")</td>
+                                        <td data-repayment-status>
+                                            @if("confirmed".equalsIgnoreCase(claim.getString("status"))) {
+                                                <span class="status-pill green">Confirmed</span>
+                                            } else if("rejected".equalsIgnoreCase(claim.getString("status"))) {
+                                                <span class="status-pill red">Rejected</span>
+                                            } else {
+                                                <span class="status-pill amber">Pending</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if("pending".equalsIgnoreCase(claim.getString("status"))) {
+                                                <input type="text" maxlength="500"
+                                                       data-review-note
+                                                       placeholder="Optional note"
+                                                       aria-label="Review note">
+                                            } else {
+                                                —
+                                            }
+                                        </td>
+                                        <td class="td-actions">
+                                            @if("pending".equalsIgnoreCase(claim.getString("status"))) {
+                                                <button type="button" class="btn-view"
+                                                        data-repayment-action="confirm"
+                                                        data-repayment-id="@claim.getLong("repayment_id")">
+                                                    Confirm
+                                                </button>
+                                                <button type="button" class="btn-view"
+                                                        data-repayment-action="reject"
+                                                        data-repayment-id="@claim.getLong("repayment_id")">
+                                                    Reject
+                                                </button>
+                                            } else {
+                                                —
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="repaymentReviewMessage" role="status"
+                         aria-live="polite" style="padding:1rem"></div>
                 </div>
             </div>
 
@@ -555,6 +667,61 @@
             `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
     }
 
+    document.querySelectorAll('[data-repayment-action]').forEach(button => {
+        button.addEventListener('click', async () => {
+            const repaymentId = Number(button.dataset.repaymentId);
+            const action = button.dataset.repaymentAction;
+            const row = button.closest('tr');
+            const note = row.querySelector('[data-review-note]');
+            const reviewNote = note ? note.value.trim() : '';
+            const message = document.getElementById('repaymentReviewMessage');
+
+            if (!Number.isInteger(repaymentId) || repaymentId <= 0 ||
+                    !['confirm', 'reject'].includes(action)) {
+                message.textContent = 'Invalid repayment review request.';
+                return;
+            }
+
+            const prompt = action === 'confirm'
+                ? 'Confirm that you have independently verified this payment?'
+                : 'Reject this repayment claim?';
+
+            if (!window.confirm(prompt)) return;
+
+            button.disabled = true;
+            message.textContent = '';
+
+            try {
+                const response = await fetch('/api/loans/repayments/review', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Csrf-Token': '@csrfToken'
+                    },
+                    body: JSON.stringify({
+                        repaymentId: repaymentId,
+                        action: action,
+                        note: reviewNote
+                    })
+                });
+
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.error || 'Repayment review failed.');
+                }
+
+                message.textContent = result.message || 'Repayment review saved.';
+                message.style.color = 'var(--text-primary)';
+                setTimeout(() => window.location.reload(), 1200);
+            } catch (error) {
+                message.textContent = error.message || 'Unable to review repayment.';
+                message.style.color = '#dc6b6b';
+                button.disabled = false;
+            }
+        });
+    });
+
     async function submitContribution(event) {
         event.preventDefault();
 
@@ -618,6 +785,47 @@
         contributionForm.addEventListener('submit', submitContribution);
     }
 
+    // Admin loan decisions: approve or reject pending applications.
+    document.querySelectorAll('[data-loan-action][data-loan-id]').forEach(button => {
+        button.addEventListener('click', async function() {
+            const loanId = Number(this.dataset.loanId);
+            const action = this.dataset.loanAction;
+
+            if (!Number.isInteger(loanId) || loanId <= 0) return;
+
+            const label = action === 'approve' ? 'approve' : 'reject';
+            if (!window.confirm(`Are you sure you want to ${label} this loan application?`)) {
+                return;
+            }
+
+            const row = this.closest('tr');
+            const buttons = row.querySelectorAll('[data-loan-action]');
+            buttons.forEach(item => item.disabled = true);
+
+            try {
+                const response = await fetch('/api/loans/approve', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Csrf-Token': '@csrfToken'
+                    },
+                    body: JSON.stringify({ loanId: loanId, action: action })
+                });
+
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.error || 'Loan decision failed.');
+                }
+
+                window.location.reload();
+            } catch (error) {
+                window.alert(error.message || 'Loan decision failed.');
+                buttons.forEach(item => item.disabled = false);
+            }
+        });
+    });
+
     function showSection(name) {
         document.querySelectorAll('.dash-content > div[id^="section-"]').forEach(el => {
             el.style.display = 'none';
@@ -636,6 +844,7 @@
             dashboard:     'ADMIN DASHBOARD',
             contributions: 'CONTRIBUTIONS',
             loans:         'LOAN REQUESTS',
+            repayments:    'REPAYMENT VERIFICATION',
             meetings:      'MEETINGS',
             members:       'MEMBERS',
             notifications: 'NOTIFICATIONS',

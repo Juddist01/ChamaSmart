@@ -2,7 +2,8 @@
    chamaSavings: Double, myContributionCount: Int, monthlyTarget: Double,
    memberContributions: java.util.List[io.ebean.SqlRow],
    memberLoans: java.util.List[io.ebean.SqlRow],
-   csrfToken: String)
+   csrfToken: String,
+   repaymentClaims: java.util.List[io.ebean.SqlRow])
 @import scala.jdk.CollectionConverters._
 @main("Member Dashboard | ChamaApp", showHeader = false) {
 
@@ -207,8 +208,26 @@
                             <p class="stat-value amber" style="font-size:2rem">Ksh @("%,.2f".format(myActiveLoans))</p>
                         </div>
                     </div>
-                    <p class="loan-due">This figure reflects approved loans recorded in your account. Repayment schedules are not currently available.</p>
+                    <p class="loan-due">This figure reflects approved loans recorded in your account. Repayments are updated after administrator verification.</p>
                 </div>
+
+                <div class="table-section" style="margin-top:1.5rem;padding:1.5rem">
+                    <h2 class="section-title">Contribution Risk Forecast</h2>
+                    <p style="color:var(--text-muted);margin-bottom:1rem">
+                        View the forecasting service's four-week lateness forecast based on your due contribution history.
+                    </p>
+                    <button type="button" class="btn-primary" id="loadForecastBtn"
+                            onclick="loadMemberForecast(@user.id)">
+                        Load My Forecast
+                    </button>
+                    <div id="memberForecastMessage" role="status" aria-live="polite"
+                         style="margin-top:1rem"></div>
+                    <pre id="memberForecastOutput"
+                         style="display:none;white-space:pre-wrap;overflow-wrap:anywhere;
+                                padding:1rem;margin-top:1rem;border-radius:8px;
+                                background:var(--surface, #f5f5f5);"></pre>
+                </div>
+
                 <div class="table-section" style="margin-top:1.5rem;padding:1.5rem">
                     <h2 class="section-title">Apply for a Loan</h2>
                     <p style="color:var(--text-muted);margin-bottom:1rem">
@@ -234,6 +253,71 @@
                     </div>
                     <div id="loanApplicationMessage" role="status"
                          style="margin-top:1rem" aria-live="polite"></div>
+                </div>
+
+                <div class="table-section" style="margin-top:1.5rem;padding:1.5rem">
+                    <h2 class="section-title">Submit a Loan Repayment</h2>
+                    <p style="color:var(--text-muted);margin-bottom:1rem">
+                        Submit the amount paid and your payment reference. Your loan balance changes only after administrator verification.
+                    </p>
+                    <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:end">
+                        <div>
+                            <label for="repaymentLoanId">Approved Loan</label>
+                            <select id="repaymentLoanId">
+                                <option value="">Select a loan</option>
+                                @for(row <- memberLoans.asScala if Option(row.getString("approval_status")).getOrElse("").equalsIgnoreCase("approved") && row.getDouble("balance_remaining") > 0) {
+                                    <option value="@row.getLong("id")">
+                                        Loan #@row.getLong("id") — Ksh @("%,.2f".format(row.getDouble("balance_remaining"))) outstanding
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        <div>
+                            <label for="repaymentAmount">Amount Paid (Ksh)</label>
+                            <input id="repaymentAmount" type="number" min="0.01" step="0.01" placeholder="Enter amount">
+                        </div>
+                        <div>
+                            <label for="repaymentReference">Payment Reference</label>
+                            <input id="repaymentReference" type="text" maxlength="120" placeholder="e.g. M-Pesa code">
+                        </div>
+                        <button type="button" class="btn-primary" id="submitRepaymentBtn" onclick="submitRepaymentClaim()">
+                            Submit Repayment
+                        </button>
+                    </div>
+                    <div id="repaymentMessage" role="status" aria-live="polite" style="margin-top:1rem"></div>
+                </div>
+
+                <div class="table-section" style="margin-top:1.5rem">
+                    <div class="table-header"><h2 class="section-title" style="margin:0">Repayment Submissions</h2></div>
+                    <div class="table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Loan</th><th>Amount</th><th>Reference</th><th>Submitted</th><th>Status</th><th>Review Note</th></tr></thead>
+                            <tbody>
+                                @if(repaymentClaims.isEmpty) {
+                                    <tr><td colspan="6">No repayment submissions yet.</td></tr>
+                                } else {
+                                    @for(claim <- repaymentClaims.asScala) {
+                                        <tr>
+                                            <td>#@claim.getLong("loan_id")</td>
+                                            <td class="td-mono">Ksh @("%,.2f".format(claim.getDouble("amount")))</td>
+                                            <td>@claim.getString("payment_reference")</td>
+                                            <td class="td-date">@{Option(claim.getString("submitted_date")).getOrElse("—")}</td>
+                                            <td>
+                                                @if("confirmed".equalsIgnoreCase(claim.getString("status"))) {
+                                                    <span class="status-pill green">Confirmed</span>
+                                                } else if("rejected".equalsIgnoreCase(claim.getString("status"))) {
+                                                    <span class="status-pill amber">Rejected</span>
+                                                } else {
+                                                    <span class="status-pill amber">Pending</span>
+                                                }
+                                            </td>
+                                            <td>@{Option(claim.getString("review_note")).getOrElse("—")}</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div class="table-section" style="margin-top:1.5rem">
@@ -316,6 +400,42 @@
        - Updates sidebar active button + header label
        No fetch, no server call. Pure CSS show/hide.
        ───────────────────────────────────────────────────────── */
+    async function loadMemberForecast(memberId) {
+        const button = document.getElementById('loadForecastBtn');
+        const message = document.getElementById('memberForecastMessage');
+        const output = document.getElementById('memberForecastOutput');
+
+        button.disabled = true;
+        button.textContent = 'Loading forecast...';
+        message.textContent = '';
+        output.style.display = 'none';
+        output.textContent = '';
+
+        try {
+            const response = await fetch('/api/members/' + encodeURIComponent(memberId) + '/forecast', {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' }
+            });
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || result.error ||
+                    'Forecast unavailable (HTTP ' + response.status + ').');
+            }
+
+            output.textContent = JSON.stringify(result, null, 2);
+            output.style.display = 'block';
+            message.textContent = 'Forecast received from the forecasting service.';
+            message.style.color = 'var(--text-primary)';
+        } catch (error) {
+            message.textContent = error.message || 'Unable to load your forecast.';
+            message.style.color = '#dc6b6b';
+        } finally {
+            button.disabled = false;
+            button.textContent = 'Load My Forecast';
+        }
+    }
+
     async function submitLoanApplication() {
         const amount = Number(document.getElementById('loanAmount').value);
         const durationMonths = Number(document.getElementById('loanDuration').value);
@@ -366,6 +486,54 @@
             message.style.color = '#dc6b6b';
             button.disabled = false;
             button.textContent = 'Submit Loan Application';
+        }
+    }
+
+    async function submitRepaymentClaim() {
+        const loanId = Number(document.getElementById('repaymentLoanId').value);
+        const amount = Number(document.getElementById('repaymentAmount').value);
+        const paymentReference = document.getElementById('repaymentReference').value.trim();
+        const message = document.getElementById('repaymentMessage');
+        const button = document.getElementById('submitRepaymentBtn');
+        const csrfToken = document.getElementById('loanCsrfToken').value;
+
+        message.textContent = '';
+
+        if (!Number.isInteger(loanId) || loanId <= 0 ||
+                !Number.isFinite(amount) || amount <= 0 ||
+                !/^\\d+(\\.\\d{1,2})?$/.test(String(document.getElementById('repaymentAmount').value).trim()) ||
+                !paymentReference || paymentReference.length > 120) {
+            message.textContent = 'Select a loan and enter a valid amount and payment reference.';
+            message.style.color = '#dc6b6b';
+            return;
+        }
+
+        button.disabled = true;
+        button.textContent = 'Submitting...';
+
+        try {
+            const response = await fetch('/api/loans/repay', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Csrf-Token': csrfToken
+                },
+                body: JSON.stringify({ loanId, amount, paymentReference })
+            });
+
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.error || 'Repayment submission failed.');
+            }
+
+            message.textContent = result.message + '. Your loan balance will update after administrator verification.';
+            message.style.color = 'var(--text-primary)';
+            setTimeout(() => window.location.reload(), 1800);
+        } catch (error) {
+            message.textContent = error.message || 'Unable to submit repayment.';
+            message.style.color = '#dc6b6b';
+            button.disabled = false;
+            button.textContent = 'Submit Repayment';
         }
     }
 
