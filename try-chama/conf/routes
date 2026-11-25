@@ -32,6 +32,8 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 # Loan Routes
 POST    /api/loans/apply            controllers.LoanController.applyForLoan(request: Request)
 POST    /api/loans/approve          controllers.LoanController.approveLoan(request: Request)
+POST    /api/loans/repay            controllers.LoanController.repayLoan(request: Request)
+POST    /api/loans/repayments/review controllers.LoanController.reviewRepayment(request: Request)
 
 #Recording Contributions
 POST    /api/contributions/record          controllers.HomeController.recordContribution(request: Request)

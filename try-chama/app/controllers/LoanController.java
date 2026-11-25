@@ -174,53 +174,298 @@ public class LoanController extends Controller {
                 });
     }
 
-    // POST /api/loans/approve
-    public Result approveLoan(Http.Request request) {
+    // POST /api/loans/repay
+    // Member submits a repayment claim; the balance is unchanged until admin confirmation.
+    public Result repayLoan(Http.Request request) {
+        JsonNode json = request.body().asJson();
+        if (json == null || !json.path("loanId").canConvertToLong()
+                || !json.path("amount").isNumber()) {
+            return badRequest(Json.newObject().put("error",
+                    "A valid loanId and numeric amount are required"));
+        }
 
+        long loanId = json.path("loanId").asLong(-1);
+        java.math.BigDecimal amount = json.path("amount").decimalValue();
+        String reference = json.path("paymentReference").asText("").trim();
+
+        if (loanId <= 0 || amount.compareTo(java.math.BigDecimal.ZERO) <= 0
+                || amount.stripTrailingZeros().scale() > 2
+                || reference.isEmpty() || reference.length() > 120) {
+            return badRequest(Json.newObject().put("error",
+                    "Provide a valid loan, positive amount (maximum 2 decimals), and payment reference"));
+        }
+
+        String sessionId = request.session().get("userId").orElse(null);
+        if (sessionId == null) {
+            return unauthorized(Json.newObject().put("error", "Authentication required"));
+        }
+
+        long userId;
+        try {
+            userId = Long.parseLong(sessionId);
+        } catch (NumberFormatException e) {
+            return unauthorized(Json.newObject().put("error", "Invalid session"));
+        }
+
+        try (io.ebean.Transaction txn = io.ebean.DB.beginTransaction()) {
+            io.ebean.SqlRow loan = io.ebean.DB.sqlQuery(
+                    "SELECT id, user_id, chama_id, approval_status, balance_remaining " +
+                    "FROM loans WHERE id = :loanId FOR UPDATE")
+                    .setParameter("loanId", loanId).findOne();
+
+            if (loan == null) return notFound(Json.newObject().put("error", "Loan not found"));
+            if (loan.getLong("user_id") != userId) {
+                return forbidden(Json.newObject().put("error", "You can only repay your own loans"));
+            }
+            if (!"approved".equalsIgnoreCase(loan.getString("approval_status"))) {
+                return status(409, Json.newObject().put("error", "Only approved loans can be repaid"));
+            }
+
+            java.math.BigDecimal balance = java.math.BigDecimal.valueOf(
+                    loan.getDouble("balance_remaining"));
+            io.ebean.SqlRow pendingRow = io.ebean.DB.sqlQuery(
+                    "SELECT COALESCE(SUM(amount), 0) AS total FROM loan_repayments " +
+                    "WHERE loan_id = :loanId AND status = 'pending'")
+                    .setParameter("loanId", loanId).findOne();
+            java.math.BigDecimal pending = pendingRow == null
+                    ? java.math.BigDecimal.ZERO
+                    : pendingRow.get("total") == null ? java.math.BigDecimal.ZERO
+                    : new java.math.BigDecimal(pendingRow.get("total").toString());
+            java.math.BigDecimal available = balance.subtract(pending);
+
+            if (amount.compareTo(available) > 0) {
+                return badRequest(Json.newObject().put("error",
+                        "Repayment exceeds the available balance after pending claims")
+                        .put("outstandingBalance", balance)
+                        .put("pendingClaims", pending)
+                        .put("availableForClaim", available.max(java.math.BigDecimal.ZERO)));
+            }
+
+            int inserted = io.ebean.DB.sqlUpdate(
+                    "INSERT INTO loan_repayments " +
+                    "(loan_id, user_id, chama_id, amount, payment_reference, status) " +
+                    "VALUES (:loanId, :userId, :chamaId, :amount, :reference, 'pending')")
+                    .setParameter("loanId", loanId)
+                    .setParameter("userId", userId)
+                    .setParameter("chamaId", loan.getLong("chama_id"))
+                    .setParameter("amount", amount)
+                    .setParameter("reference", reference)
+                    .execute();
+
+            if (inserted != 1) throw new IllegalStateException("Claim was not saved");
+            txn.commit();
+
+            return ok(Json.newObject()
+                    .put("message", "Repayment submitted for administrator verification")
+                    .put("status", "pending")
+                    .put("loanId", loanId)
+                    .put("amount", amount)
+                    .put("paymentReference", reference)
+                    .put("balanceUnchanged", true));
+        } catch (Exception e) {
+            return internalServerError(Json.newObject().put("error",
+                    "Repayment claim could not be saved. No changes were committed."));
+        }
+    }
+
+    // POST /api/loans/repayments/review
+    // Chama admin confirms or rejects a member's pending repayment claim.
+    public Result reviewRepayment(Http.Request request) {
+        JsonNode json = request.body().asJson();
+        if (json == null || !json.path("repaymentId").canConvertToLong()) {
+            return badRequest(Json.newObject().put("error", "A valid repaymentId is required"));
+        }
+
+        long repaymentId = json.path("repaymentId").asLong(-1);
+        String action = json.path("action").asText("").trim().toLowerCase();
+        String note = json.path("note").asText("").trim();
+
+        if (repaymentId <= 0 || (!"confirm".equals(action) && !"reject".equals(action))) {
+            return badRequest(Json.newObject().put("error",
+                    "Provide a valid repaymentId and action: confirm or reject"));
+        }
+        if (note.length() > 500) {
+            return badRequest(Json.newObject().put("error", "Review note is too long"));
+        }
+
+        String sessionId = request.session().get("userId").orElse(null);
+        if (sessionId == null) {
+            return unauthorized(Json.newObject().put("error", "Authentication required"));
+        }
+
+        User admin;
+        try {
+            admin = User.find.byId(Long.parseLong(sessionId));
+        } catch (NumberFormatException e) {
+            return unauthorized(Json.newObject().put("error", "Invalid session"));
+        }
+        if (admin == null || !"chama_admin".equals(admin.role)) {
+            return forbidden(Json.newObject().put("error", "Only Chama Admins can review repayments"));
+        }
+
+        try (io.ebean.Transaction txn = io.ebean.DB.beginTransaction()) {
+            io.ebean.SqlRow claim = io.ebean.DB.sqlQuery(
+                    "SELECT r.id, r.loan_id, r.user_id, r.chama_id, r.amount, r.status, " +
+                    "l.balance_remaining FROM loan_repayments r " +
+                    "JOIN loans l ON l.id = r.loan_id " +
+                    "WHERE r.id = :repaymentId FOR UPDATE")
+                    .setParameter("repaymentId", repaymentId).findOne();
+
+            if (claim == null) return notFound(Json.newObject().put("error", "Repayment claim not found"));
+            if (!"pending".equalsIgnoreCase(claim.getString("status"))) {
+                return status(409, Json.newObject().put("error", "This repayment has already been reviewed"));
+            }
+
+            io.ebean.SqlRow ownership = io.ebean.DB.sqlQuery(
+                    "SELECT chama_id FROM chama WHERE chama_id = :chamaId AND admin_id = :adminId")
+                    .setParameter("chamaId", claim.getLong("chama_id"))
+                    .setParameter("adminId", admin.id).findOne();
+            if (ownership == null) {
+                return forbidden(Json.newObject().put("error",
+                        "This repayment does not belong to a chama you manage"));
+            }
+
+            java.math.BigDecimal amount = new java.math.BigDecimal(claim.get("amount").toString());
+            if ("confirm".equals(action)) {
+                java.math.BigDecimal balance = new java.math.BigDecimal(
+                        claim.get("balance_remaining").toString());
+                if (amount.compareTo(balance) > 0) {
+                    return status(409, Json.newObject().put("error",
+                            "The repayment exceeds the current outstanding loan balance"));
+                }
+
+                int updatedLoan = io.ebean.DB.sqlUpdate(
+                        "UPDATE loans SET " +
+                        "repayment_status = CASE WHEN balance_remaining - :amount <= 0.005 " +
+                        "THEN 'paid' ELSE 'partial' END, " +
+                        "balance_remaining = GREATEST(balance_remaining - :amount, 0) " +
+                        "WHERE id = :loanId AND approval_status = 'approved' " +
+                        "AND balance_remaining >= :amount")
+                        .setParameter("amount", amount)
+                        .setParameter("loanId", claim.getLong("loan_id")).execute();
+                if (updatedLoan != 1) {
+                    return status(409, Json.newObject().put("error", "Loan balance changed; review again"));
+                }
+
+                int recorded = io.ebean.DB.sqlUpdate(
+                        "INSERT INTO transactions " +
+                        "(user_id, chama_id, type, amount, reference_id, description) " +
+                        "VALUES (:userId, :chamaId, 'loan_repayment', :amount, :loanId, :description)")
+                        .setParameter("userId", claim.getLong("user_id"))
+                        .setParameter("chamaId", claim.getLong("chama_id"))
+                        .setParameter("amount", amount)
+                        .setParameter("loanId", claim.getLong("loan_id"))
+                        .setParameter("description", "Verified repayment claim #" + repaymentId)
+                        .execute();
+                if (recorded != 1) throw new IllegalStateException("Repayment transaction was not recorded");
+            }
+
+            int reviewed = io.ebean.DB.sqlUpdate(
+                    "UPDATE loan_repayments SET status = :newStatus, reviewed_by = :adminId, " +
+                    "reviewed_at = CURRENT_TIMESTAMP, review_note = :note " +
+                    "WHERE id = :repaymentId AND status = 'pending'")
+                    .setParameter("newStatus", "confirm".equals(action) ? "confirmed" : "rejected")
+                    .setParameter("adminId", admin.id)
+                    .setParameter("note", note.isEmpty() ? null : note)
+                    .setParameter("repaymentId", repaymentId).execute();
+            if (reviewed != 1) throw new IllegalStateException("Claim review was not saved");
+
+            txn.commit();
+            return ok(Json.newObject()
+                    .put("message", "Repayment " + ("confirm".equals(action) ? "confirmed" : "rejected"))
+                    .put("repaymentId", repaymentId)
+                    .put("status", "confirm".equals(action) ? "confirmed" : "rejected"));
+        } catch (Exception e) {
+            return internalServerError(Json.newObject().put("error",
+                    "Repayment review failed. No changes were committed."));
+        }
+    }
+
+    // POST /api/loans/approve
+    // Supports both approval and rejection of pending applications.
+    public Result approveLoan(Http.Request request) {
         JsonNode json = request.body().asJson();
 
-        if (json == null || !json.hasNonNull("loanId")) {
-            return badRequest(Json.newObject().put("error", "loanId is required"));
+        if (json == null || !json.path("loanId").canConvertToLong()) {
+            return badRequest(Json.newObject().put("error", "A valid loanId is required"));
+        }
+
+        long loanId = json.path("loanId").asLong(-1);
+        String action = json.path("action").asText("approve").trim().toLowerCase();
+
+        if (loanId <= 0) {
+            return badRequest(Json.newObject().put("error", "Invalid loanId"));
+        }
+
+        if (!"approve".equals(action) && !"reject".equals(action)) {
+            return badRequest(Json.newObject().put("error",
+                    "Action must be approve or reject"));
         }
 
         String adminIdStr = request.session().get("userId").orElse(null);
-
         if (adminIdStr == null) {
-            return unauthorized("Authentication required");
+            return unauthorized(Json.newObject().put("error", "Authentication required"));
         }
 
         User admin;
         try {
             admin = User.find.byId(Long.parseLong(adminIdStr));
         } catch (NumberFormatException e) {
-            return unauthorized("Invalid session");
+            return unauthorized(Json.newObject().put("error", "Invalid session"));
         }
 
         if (admin == null || !"chama_admin".equals(admin.role)) {
-            return unauthorized("Only Chama Admins can approve loans");
+            return forbidden(Json.newObject().put("error",
+                    "Only Chama Admins can decide loan applications"));
         }
 
-        long loanId = json.path("loanId").asLong(-1);
+        String newStatus = "approve".equals(action) ? "approved" : "rejected";
 
-        if (loanId <= 0) {
-            return badRequest("Invalid loanId");
+        try (io.ebean.Transaction txn = io.ebean.DB.beginTransaction()) {
+            int updated = io.ebean.DB.sqlUpdate(
+                    "UPDATE loans SET approval_status = :newStatus " +
+                    "WHERE id = :loanId AND approval_status = 'pending' " +
+                    "AND chama_id IN (SELECT chama_id FROM chama WHERE admin_id = :adminId)")
+                    .setParameter("newStatus", newStatus)
+                    .setParameter("loanId", loanId)
+                    .setParameter("adminId", admin.id)
+                    .execute();
+
+            if (updated == 0) {
+                return status(409, Json.newObject().put("error",
+                        "Loan not found, already decided, or not managed by your chama"));
+            }
+
+            if ("approved".equals(newStatus)) {
+                int recorded = io.ebean.DB.sqlUpdate(
+                        "INSERT INTO transactions " +
+                        "(user_id, chama_id, type, amount, reference_id, description) " +
+                        "SELECT user_id, chama_id, 'loan_disbursement', amount, id, " +
+                        "CONCAT('Loan disbursement for loan #', id) " +
+                        "FROM loans WHERE id = :loanId " +
+                        "AND approval_status = 'approved' " +
+                        "AND NOT EXISTS (" +
+                        "SELECT 1 FROM transactions " +
+                        "WHERE type = 'loan_disbursement' AND reference_id = :loanId)")
+                        .setParameter("loanId", loanId)
+                        .execute();
+
+                if (recorded != 1) {
+                    throw new IllegalStateException(
+                            "Loan approval succeeded but disbursement was not recorded");
+                }
+            }
+
+            txn.commit();
+
+            return ok(Json.newObject()
+                    .put("message", "Loan " + newStatus + " successfully")
+                    .put("loanId", loanId)
+                    .put("approvalStatus", newStatus));
+        } catch (Exception e) {
+            return internalServerError(Json.newObject()
+                    .put("error", "Loan decision could not be completed. No changes were committed."));
         }
-
-        int updated = io.ebean.DB.sqlUpdate(
-                "UPDATE loans SET approval_status = 'approved' "
-                        + "WHERE id = :loanId AND approval_status = 'pending' "
-                        + "AND chama_id = (SELECT chama_id FROM user WHERE id = :adminId)"
-        )
-                .setParameter("loanId", loanId)
-                .setParameter("adminId", admin.id)
-                .execute();
-
-        if (updated == 0) {
-            return badRequest(Json.newObject().put("error",
-                    "Loan not found, not pending, or does not belong to your chama"));
-        }
-
-        return ok(Json.newObject().put("message", "Loan approved successfully"));
     }
 
     private double calculateTotalContributions(long userId) {
