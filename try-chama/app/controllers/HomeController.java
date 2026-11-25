@@ -365,8 +365,8 @@ public class HomeController extends Controller {
                 "JOIN chama c ON c.chama_id = co.chama_id " +
                 "LEFT JOIN user u ON u.id = co.user_id " +
                 "WHERE c.admin_id = :adminId " +
-                "ORDER BY CASE WHEN co.status = 'EXPECTED' THEN 0 ELSE 1 END, " +
-                "co.due_date DESC, co.payment_date DESC, co.id DESC LIMIT 50")
+                "ORDER BY CASE WHEN co.status = 'PAID' THEN 0 ELSE 1 END, " +
+                "co.payment_date DESC, co.due_date DESC, co.id DESC LIMIT 50")
                 .setParameter("adminId", user.id)
                 .findList();
 
